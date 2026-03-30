@@ -5,17 +5,31 @@
 uint8_t create_server(Socket_t * sckt){
 	sckt->socketfd = socket(sckt->domain, sckt->type, sckt->protocol);
 	if(sckt->socket < 0){
-		char *msg = "Error - failed to create socket");
+		char *msg = "Error - failed to create socket";
 		write(1, msg, 31);
 		return 1;
 	}
 	if(bind(sckt->socketfd, (struct sockaddr *) sckt->sockaddr_in.address, sizeof(sckt->sockaddr_in.address)) < 0) {
-		char *msg = "Error - failed to bind socket");
+		char *msg = "Error - failed to bind socket";
                 write(1, msg, 29);
                 return 1;	
-
 
 	}
 	return 0;
 
 }
+
+uint8_t	start_listen(Socket_t * sckt){
+	int *opt =1;
+	setsockopt(sckt->socketfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+
+	if(listen(sckt->socketfd, sckt->backlog) < 0){
+		char *msg = "Error - failed to listen socket";
+                write(1, msg, 31);
+                return 1;
+	
+	}
+	return 0;
+
+} 
+
