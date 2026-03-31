@@ -2,8 +2,9 @@
 #define
 
 #include <time.h>
+#include <stdint.h>
 
-#define CACHE_SIZE 10
+#define TABLE_SIZE 10
 #define URL_MAX	256
 #define DATA_MAX 1024
 
@@ -11,17 +12,20 @@ typedef struct {
 	char url[URL_MAX];
 	char data[DATA_MAX];
 	time_t timestamp;
-	int valid;
+	uint8_t valid;
+	CacheEntry_t *next;
 } CacheEntry_t;
 
 typedef struct {
-	CacheEntry_t entries[CACHE_SIZE];
-	int count;
+	CacheEntry_t entries[TABLE_SIZE];
+	uint16_t count;
 
 } Cache_t;
 
-void init_cache(Cache_t *cache);
-int content_filtering(const char *url, const char *data);
-void add_cache(Cache_t *cache, const char *url, const char *data);
+int8_t init_cache(Cache_t *cache);
+int8_t content_filtering(const char *url, const char *data);
+int8_t add_cache(Cache_t *cache, const char *url, const char *data);
+CacheEntry_t* find_cache(Cache_t *cache, const char *url);
+uint16_t hash(const char *url);
 
 #endif
