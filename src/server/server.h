@@ -4,8 +4,10 @@
 #include <netinet/in.h>
 #include <stdint.h>
 
+#define BUFFER_SIZE 8192
+
 typedef struct {
-	int	socketfd;
+	int	socket_fd;
 	struct 	sockaddr_in address;
 	int 	port;
 	int	backlog;
@@ -14,9 +16,19 @@ typedef struct {
 	int	protocol;
 } Socket_t;
 
-uint8_t create_server(Socket_t * sckt);
-uint8_t start_listen(Socket_t * sckt);
-uint8_t accept_client(Socket_t * server, Socket_t * client);
-uint8_t close_server(Socket_t * sckt);
+typedef struct {
+	int	client_fd;
+	int	server_fd;
+	char	buffer[BUFFER_SIZE];
+	int	buffer_len;
+	int	state;
+
+} Connection_t;
+
+int8_t create_server(Socket_t * sckt);
+int8_t start_listen(Socket_t * sckt);
+int8_t accept_client(Socket_t * server, Socket_t * client);
+int8_t close_server(Socket_t * sckt);
+int8_t set_nonblocking(int fd);
 
 #endif
