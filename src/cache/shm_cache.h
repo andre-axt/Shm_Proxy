@@ -12,7 +12,6 @@ typedef struct {
 	char url[URL_MAX];
 	char data[DATA_MAX];
 	time_t timestamp;
-	uint8_t valid;
 	CacheEntry_t *next;
 } CacheEntry_t;
 
