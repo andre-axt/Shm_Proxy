@@ -1,6 +1,17 @@
 #include "server.h"
 #include <sys/socket.h>
 #include <unistd.h>
+#include <fcntl.h>
+
+int8_t set_nonbocking(int sckt_fd) {
+	int flags = fcntl(sckt_fd, F_GETFL, 0);
+	if (flags == -1){
+		char *msg = "Error - fcntl failed";
+		write(1, msg, 21);
+		return -1;
+	}
+	return fcntl(sckt_fd, F_SETFL, flags | 0_NONBLOCK); 
+} 
 
 int8_t create_server(Socket_t * sckt){
 	sckt->socket_fd = socket(sckt->domain, sckt->type, sckt->protocol);
@@ -33,3 +44,8 @@ int8_t	start_listen(Socket_t * sckt){
 
 } 
 
+int8_t accept_new_connection(Socket_t * sckt, int epoll_fd){
+	struct scckaddr_in client_addr;
+	socklen_t client_len = sizeof(client_addr);
+
+}
