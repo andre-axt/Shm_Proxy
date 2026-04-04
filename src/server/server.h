@@ -31,7 +31,7 @@ int8_t create_server(Socket_t * sckt);
 int8_t start_listen(Socket_t * sckt);
 int8_t accept_client(Socket_t * server, Socket_t * client);
 int8_t close_server(Socket_t * sckt);
-int8_t set_nonblocking(int sckt_fd);
+int8_t set_nonbocking(Socket_t  *sckt);
 int8_t accept_new_connection(Socket_t * sckt, int epoll_fd);
 
 
