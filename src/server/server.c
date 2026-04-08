@@ -31,7 +31,7 @@ int8_t create_server(Socket_t * sckt){
 
 }
 
-int8_t	start_listen(Socket_t * sckt){
+int8_t start_listen(Socket_t * sckt){
 	int *opt =1;
 	setsockopt(sckt->socket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
@@ -50,8 +50,19 @@ int8_t accept_new_connection(Connection_t *conn){
 	socklen_t client_len = sizeof(client_addr);
 	conn->client_fd = accept(conn->server_fd, *client_addr, client_len); 
 	if(conn->client_fd == -1){
-		char *msg = "Error - accept returned -1"
+		char *msg = "Error - accept returned -1";
 		return 1;	
+	}
+	return 0;
+
+}
+
+int8_t read_client(Connection_t *conn){
+	if(recv(conn->client_fd, conn->buffer, conn->buffer_len, 0) == -1){
+		char *msg = "Error - client disconnected";
+		write(1, msg, 27);
+		return 1;
+	
 	}
 	return 0;
 
