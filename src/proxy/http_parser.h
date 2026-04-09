@@ -24,7 +24,7 @@ typedef struct{
 
 
 http_request_t* init_http_request();
-http_response_t* response_parser(http_response_t *response);
-http_request_t* request_parser(http_request_t *request);
+http_response_t* response_parser(http_response_t *response, char *buffer);
+http_request_t* request_parser(http_request_t *request, char *buffer);
 
 #endif
