@@ -10,7 +10,7 @@
 
 typedef struct {
 	char url[URL_MAX];
-	char data[DATA_MAX];
+	http_response_t response;
 	time_t timestamp;
 	CacheEntry_t *next;
 } CacheEntry_t;

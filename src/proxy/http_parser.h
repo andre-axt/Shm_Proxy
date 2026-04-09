@@ -1,7 +1,15 @@
 #ifndef HTTP_PARSE
 #define HTTP_PARSE
 
-#include <stdint.h>
+typedef struct{
+	int status_code;
+	char *version;
+	char **headers;
+	int header_count;
+	char *body;
+	size_t body_length;
+
+} http_response_t;
 
 typedef struct{
 	char *method;
