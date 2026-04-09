@@ -5,7 +5,6 @@
 #include <stdint.h>
 #include <sys/epoll.h>
 
-#define BUFFER_SIZE 8192
 #define MAX_EVENTS 10
 
 typedef struct {
@@ -21,7 +20,7 @@ typedef struct {
 typedef struct {
 	int	client_fd;
 	int	server_fd;
-	char	buffer[BUFFER_SIZE];
+	char *buffer;
 	int	buffer_len;
 	int	state;
 
