@@ -33,5 +33,6 @@ int8_t close_server(Socket_t * sckt);
 int8_t set_nonbocking(Socket_t  *sckt);
 int8_t accept_new_connection(Connection_t *conn);
 int8_t read_client(Connection_t *conn);
+int8_t read_buffer(Connection_t *conn);
 
 #endif
