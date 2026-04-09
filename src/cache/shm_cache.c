@@ -70,3 +70,15 @@ int8_t add_cache(Cache_t *cache, const char *url, const char *data){
 	return 0;
 	
 }
+
+
+http_response_t* find_cache(Cache_t *cache, const char *url){
+	hash_url = hash(url);
+	for(int i = 0; i <= 4; i++){
+		if(cache->entries[hash_url + i].url = url){
+			return cache->entries[hash_url + i].response;		
+		}
+		
+	}
+	return NULL;
+}
