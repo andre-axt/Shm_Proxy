@@ -14,4 +14,16 @@ http_request_t* init_http_request(){
 
 }
 
+http_response_t* init_http_response(){
+        http_response_t *res = malloc(sizeof(http_response_t);
+        res->status_code = 0;
+        res->version = NULL;
+        res->headers = NULL;
+        res->header_count = 0;
+        res->body = NULL;
+        res->body_length = 0;
+        return res;
+        
+}
+
 
