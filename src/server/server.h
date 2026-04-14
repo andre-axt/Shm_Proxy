@@ -6,6 +6,7 @@
 #include <sys/epoll.h>
 
 #define MAX_EVENTS 10
+#define BUFFER_SIZE 8192
 
 typedef struct {
 	int	socket_fd;
