@@ -30,6 +30,8 @@ int main(){
 	ev.data.fd = server->socket_fd;
 	epoll_ctl(epfd, EPOLL_CTL_ADD, server->socket_fd, &ev);
 	Connection_t * conn = malloc(sizeof(Connection_t);
+	conn->buffer = malloc(BUFFER_SIZE);
+	conn->buffer_len = (size_t) BUFFER_SIZE;
 	conn->server_fd = server->socket_fd;
 	while(1){
 		int nfds = epoll_wait(epfd, events, MAX_EVENTS, -1);
