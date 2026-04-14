@@ -58,11 +58,25 @@ int8_t accept_new_connection(Connection_t *conn){
 }
 
 int8_t read_client(Connection_t *conn){
-	if(recv(conn->client_fd, conn->buffer, conn->buffer_len, 0) == -1){
-		char *msg = "Error - client disconnected";
-		write(1, msg, 27);
-		return 1;
-	
+	size_t total_read = 0;
+	size_t bytes_read;
+
+	while(1) {
+		if (total_read + 4096 > conn->buffer_len){
+			size_t new_size = conn->buffer_size *2;
+			char *new_buffer = realloc(conn->buffer, new_size);
+			if(!new_buffer) return -1;
+
+			conn->buffer = new_buffer;
+			conn->buffer_size = new_size;
+			
+		}
+		bytes_read = recv(conn->client_fd, conn->buffer + total_read, conn->buffer_len - total_read, 0);
+		if(bytes_read <= 0){
+			break;
+		}
+		total_read += bytes_read;
+		
 	}
 	return 0;
 
