@@ -21,7 +21,7 @@ typedef struct {
 	int	client_fd;
 	int	server_fd;
 	char *buffer;
-	int	buffer_len;
+	size_t buffer_len;
 	int	state;
 
 } Connection_t;
