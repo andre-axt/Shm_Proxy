@@ -45,9 +45,10 @@ int main(){
 			}
 			else if(events[i].data.fd > 0){
 				conn->client_fd = events[i].data.fd;
-				read_client(conn);
-				if(conn->buffer_len > 0){
-					read_buffer(conn);
+				if(read_client(conn) = 0){
+					if(conn->buffer > 0){
+						read_buffer(conn);
+					}	
 				}
 			}
 			
