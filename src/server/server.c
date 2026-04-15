@@ -81,3 +81,22 @@ int8_t read_client(Connection_t *conn){
 	return 0;
 
 }
+
+int8_t read_buffer(Connection_t *conn){
+	char *read_4_bytes = malloc(4);
+	strcpy(read_4_bytes, conn->buffer);
+	if(strstr(read_4_bytes, "http") != NULL){
+		http_response_t *response = init_http_response();
+		response_parser(response, conn->buffer);
+	}else if{
+		http_request_t *request = init_http_request();
+		request_parser(request, conn->buffer);
+	}else{
+		free(read_4_bytes);
+		return 1;
+	}
+
+	free(read_4_bytes);
+	return 0;
+	
+}
