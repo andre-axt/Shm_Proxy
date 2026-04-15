@@ -55,5 +55,6 @@ int main(){
 		}	
 	
 	}
+	free(conn->buffer);
 	free(conn);
 }
