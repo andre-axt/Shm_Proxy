@@ -26,4 +26,23 @@ http_response_t* init_http_response(){
         
 }
 
+http_request_t* request_parser(http_request_t *request, char *buffer){
+        buffer_len = strlen(buffer);
+        int c = 0;
+        char *buffer_aux = malloc(sizeof(buffer_len));
+        int8_t aux1 = 0;
+        int8_t aux2 = 0;
+        while(c = ' '){
+                c = buffer[aux1];
+                aux1++;
+        }
+        while(c != '\0' || c != ' '){
+                c = buffer[aux2 + aux1];
+                buffer_aux[aux2] = c;
+                aux2++;
+        }
+        strncpy(request->method, buffer_aux, sizeof(aux2) + 1);
+        request->method += '\0';
 
+        free(buffer_aux);
+}
