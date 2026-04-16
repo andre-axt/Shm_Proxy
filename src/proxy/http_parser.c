@@ -41,8 +41,22 @@ http_request_t* request_parser(http_request_t *request, char *buffer){
                 buffer_aux[aux2] = c;
                 aux2++;
         }
-        strncpy(request->method, buffer_aux, sizeof(aux2) + 1);
-        request->method += '\0';
-
+        memcpy(request->method, buffer_aux, sizeof(aux2));
+        request->method[[sizeof(buffer_aux) - 1] = '\0';
+        aux2++;
+        while(c = ' '){
+                c = buffer[aux2];
+                aux2++;
+        }
+        aux1 = aux2;
+        aux2 = 0;
+        memset(buffer_aux, 0, aux1);
+        while(c != '\0' || c != ' '){
+                c = buffer[aux2 + aux1];
+                buffer_aux[aux2] = c;
+                aux2++;
+        }
+        memcpy(request->path, buffer_aux, sizeof(aux2));
+        request->path[[sizeof(buffer_aux) - 1] = '\0';
         free(buffer_aux);
 }
