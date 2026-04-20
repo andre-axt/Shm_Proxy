@@ -14,6 +14,7 @@ typedef struct{
 typedef struct{
 	char *method;
 	char *path;
+	char *query_string;
 	char *version;
 	char **headers;
 	int header_count;
@@ -27,5 +28,6 @@ http_request_t* init_http_request();
 http_response_t* init_http_response();
 http_response_t* response_parser(http_response_t *response, char *buffer);
 http_request_t* request_parser(http_request_t *request, char *buffer);
+void parser_query_string(char *path, char **query_string, char **clean_path);
 
 #endif
