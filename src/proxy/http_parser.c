@@ -56,7 +56,22 @@ http_request_t* request_parser(http_request_t *request, char *buffer){
                 buffer_aux[aux2] = c;
                 aux2++;
         }
-        memcpy(request->path, buffer_aux, sizeof(aux2));
+        char full_path = malloc(sizeof(aux2);
+        memcpy(full_path, buffer_aux, sizeof(aux2));
+        parse_query_string(full_path, &request->query_string, &request->path);
+        free(full_path);
         request->path[[sizeof(buffer_aux) - 1] = '\0';
         free(buffer_aux);
+}
+
+void parse_query_string(char *path, char **query_string, char **clean_path){
+        char *qmark = strchr(path, '?');
+        if(qmark) {
+                *query_string = strdup(qmark + 1);
+                *clean_path = strdup(path, qmark - path);
+        } else{
+                *query_string = NULL;
+                *clean_path = strdup(path);
+        }
+       
 }
