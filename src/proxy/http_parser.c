@@ -26,6 +26,16 @@ http_response_t* init_http_response(){
         
 }
 
+void free_request(http_request_t *req){
+        free(req->method);
+        free(req->path);
+        free(req->query_string);
+        free(req->version);
+        free(req->headers);
+        free(req->body);
+        free(req);
+}
+
 http_request_t* request_parser(http_request_t *request, char *buffer){
         buffer_len = strlen(buffer);
         int c = 0;
