@@ -66,20 +66,20 @@ int8_t parse_headers(char *buffer, char ***headers, int8_t *header_count) {
         int count = 0;
         char **x_headers = malloc(100 * sizeof(char*));
 
-        while ((line = strstr(line, "\r\n"))){
-                line += 2; 
-                if (strcmp(line, \r\n) == 0 || *line == 'r') break;
-
+        while (*line != '\0' && count < 100){
                 char *end = strstr(line, "\r\n");
-                if (end) {
-                        x_headers[count] = strndup(line, end - line);
-                        count++;
-                        line = end;
-                }
+                if (!end) break;
+                if (end == line) break;
+                int line_len = end - line;
+                x_headers[count] = strdup(line, line_len);
+                count++;
+
+                line = end + 2;
         }
 
         *headers = x_headers;
         *header_count = count;
+        free(x_headers);
         return 0;
 }
 
@@ -118,5 +118,19 @@ http_request_t* request_parser(http_request_t *request, char *buffer){
         parse_query_string(full_path, &request->query_string, &request->path);
         free(full_path);
         request->path[[sizeof(buffer_aux) - 1] = '\0';
+        aux2++;
+        while(c = ' '){
+                c = buffer[aux2];
+                aux2++;
+        }
+        aux1 = aux2;
+        aux2 = 0;
+        memset(buffer_aux, 0, aux1);
+        while(c != '\0' || c != ' '){
+                c = buffer[aux2 + aux1];
+                buffer_aux[aux2] = c;
+                aux2++;
+        }
+        parse_headers(buffer_aux, req->headers, req->header_count);
         free(buffer_aux);
 }
