@@ -49,6 +49,40 @@ void free_response(http_response_t *res){
         free(res);
 }
 
+void parse_query_string(char *path, char **query_string, char **clean_path){
+        char *qmark = strchr(path, '?');
+        if(qmark) {
+                *query_string = strdup(qmark + 1);
+                *clean_path = strdup(path, qmark - path);
+        } else{
+                *query_string = NULL;
+                *clean_path = strdup(path);
+        }
+       
+}
+
+int8_t parse_headers(char *buffer, char ***headers, int8_t *header_count) {
+        char *line = buffer;
+        int count = 0;
+        char **x_headers = malloc(100 * sizeof(char*));
+
+        while ((line = strstr(line, "\r\n"))){
+                line += 2; 
+                if (strcmp(line, \r\n) == 0 || *line == 'r') break;
+
+                char *end = strstr(line, "\r\n");
+                if (end) {
+                        x_headers[count] = strndup(line, end - line);
+                        count++;
+                        line = end;
+                }
+        }
+
+        *headers = x_headers;
+        *header_count = count;
+        return 0;
+}
+
 http_request_t* request_parser(http_request_t *request, char *buffer){
         buffer_len = strlen(buffer);
         int c = 0;
@@ -85,16 +119,4 @@ http_request_t* request_parser(http_request_t *request, char *buffer){
         free(full_path);
         request->path[[sizeof(buffer_aux) - 1] = '\0';
         free(buffer_aux);
-}
-
-void parse_query_string(char *path, char **query_string, char **clean_path){
-        char *qmark = strchr(path, '?');
-        if(qmark) {
-                *query_string = strdup(qmark + 1);
-                *clean_path = strdup(path, qmark - path);
-        } else{
-                *query_string = NULL;
-                *clean_path = strdup(path);
-        }
-       
 }
