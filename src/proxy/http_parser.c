@@ -31,6 +31,9 @@ void free_request(http_request_t *req){
         free(req->path);
         free(req->query_string);
         free(req->version);
+        for (int i = 0; i < req->header_count; i++) {
+                free(req->headers[i]);
+        }
         free(req->headers);
         free(req->body);
         free(req);
@@ -38,9 +41,12 @@ void free_request(http_request_t *req){
 
 void free_response(http_response_t *res){
         free(res->version);
-        free(req->headers);
-        free(req->body);
-        free(req);
+        for (int i = 0; i < res->header_count; i++) {
+                free(res->headers[i]);
+        }
+        free(res->headers);
+        free(res->body);
+        free(res);
 }
 
 http_request_t* request_parser(http_request_t *request, char *buffer){
