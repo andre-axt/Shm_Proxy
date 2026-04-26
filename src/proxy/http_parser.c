@@ -49,6 +49,16 @@ void free_response(http_response_t *res){
         free(res);
 }
 
+char *trim(char *str) {
+        while(isspace((unsigned char)*str)) str++;
+        if(*str == 0) return str;
+
+        char *end = str + strlen(str) - 1;
+        while(end > str && isspace((unsigned char) *end)) end--;
+        end[1] = '\0';
+        return str;
+}
+
 void parse_query_string(char *path, char **query_string, char **clean_path){
         char *qmark = strchr(path, '?');
         if(qmark) {
