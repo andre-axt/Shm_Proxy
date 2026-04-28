@@ -122,7 +122,7 @@ http_request_t* request_parser(http_request_t *request, char *buffer){
                 parse_query_string(full_path, &request->query_string, &request->path);
         }
         
-        char *headers_start = strstr(buffer_aux, "\r\n");
+        char *headers_start = strstr(buffer, "\r\n");
         if (headers_start) {
                 headers_start += 2;
                 char *headers_end = strstr(headers_start, "\r\n\r\n");
