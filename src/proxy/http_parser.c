@@ -92,7 +92,6 @@ int8_t parse_headers(char *buffer, char ***headers, int8_t *header_count) {
 
         *headers = x_headers;
         *header_count = count;
-        free(x_headers);
         return 0;
 }
 
