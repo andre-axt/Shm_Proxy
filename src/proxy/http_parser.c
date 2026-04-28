@@ -1,5 +1,7 @@
 #include "http_parse.h"
 #include <stdlib.h>
+#include <string.h>
+#include <strings.h>
 
 http_request_t* init_http_request(){
         http_request_t *req = malloc(sizeof(http_request_t));
