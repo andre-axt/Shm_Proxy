@@ -93,54 +93,54 @@ int8_t parse_headers(char *buffer, char ***headers, int8_t *header_count) {
         return 0;
 }
 
+char *get_header(char **headers, int header_count, const char *name) {
+    for (int i = 0; i < header_count; i++) {
+        if (strncasecmp(headers[i], name, strlen(name)) == 0 && headers[i][strlen(name)] == ':') {
+            char *value = headers[i] + strlen(name) + 1; 
+            return trim(value);
+        }
+    }
+    return NULL;
+}
+
 http_request_t* request_parser(http_request_t *request, char *buffer){
-        buffer_len = strlen(buffer);
-        int c = 0;
-        char *buffer_aux = malloc(sizeof(buffer_len));
-        int8_t aux1 = 0;
-        int8_t aux2 = 0;
-        while(c = ' '){
-                c = buffer[aux1];
-                aux1++;
+        char *buffer_aux = strdup(buffer);
+        char *line = strtok(buffer_aux, "\r\n");
+
+        if (!line) return request;
+
+        char *method = strtok(line, " ");
+        char *full_path = strtok(NULL, " ");
+        char *version = strtok(NULL, " ");
+
+        if (method && full_path && version) {
+                request->method = strdup(method);
+                request->version = strdup(version);
+
+                parse_query_string(full_path, &request->query_string, &request->path);
         }
-        while(c != '\0' || c != ' '){
-                c = buffer[aux2 + aux1];
-                buffer_aux[aux2] = c;
-                aux2++;
+        
+        char *headers_start = strstr(buffer_aux, "\r\n");
+        if (headers_start) {
+                headers_start += 2;
+                char *headers_end = strstr(headers_start, "\r\n\r\n");
+                if (headers_end) {
+                        int headers_len = headers_end - headers_start;
+                        char *headers_buffer = strdup(headers_start, headers_len);
+                        parse_headers(headers_buffer, &request->headers, &request->header_count);
+                        free(headers_buffer);
+                        char *content_length_str = get_header(request->headers, request->header_count, "Content-Length");
+                        if (content_length_str) {
+                                int content_length = atoi(content_legth_str);
+                                char *body_start = headers_end + 4;
+                                if (strlen(body_start) >= content_length) {
+                                        request->body = strndup(body_start, content_length);
+                                }
+                        }
+                }
         }
-        memcpy(request->method, buffer_aux, sizeof(aux2));
-        request->method[[sizeof(buffer_aux) - 1] = '\0';
-        aux2++;
-        while(c = ' '){
-                c = buffer[aux2];
-                aux2++;
-        }
-        aux1 = aux2;
-        aux2 = 0;
-        memset(buffer_aux, 0, aux1);
-        while(c != '\0' || c != ' '){
-                c = buffer[aux2 + aux1];
-                buffer_aux[aux2] = c;
-                aux2++;
-        }
-        char full_path = malloc(sizeof(aux2);
-        memcpy(full_path, buffer_aux, sizeof(aux2));
-        parse_query_string(full_path, &request->query_string, &request->path);
-        free(full_path);
-        request->path[[sizeof(buffer_aux) - 1] = '\0';
-        aux2++;
-        while(c = ' '){
-                c = buffer[aux2];
-                aux2++;
-        }
-        aux1 = aux2;
-        aux2 = 0;
-        memset(buffer_aux, 0, aux1);
-        while(c != '\0' || c != ' '){
-                c = buffer[aux2 + aux1];
-                buffer_aux[aux2] = c;
-                aux2++;
-        }
-        parse_headers(buffer_aux, req->headers, req->header_count);
+
         free(buffer_aux);
+        return request;
+        
 }
