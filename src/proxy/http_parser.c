@@ -84,7 +84,7 @@ int8_t parse_headers(char *buffer, char ***headers, int8_t *header_count) {
                 if (!end) break;
                 if (end == line) break;
                 int line_len = end - line;
-                x_headers[count] = strdup(line, line_len);
+                x_headers[count] = strndup(line, line_len);
                 count++;
 
                 line = end + 2;
@@ -129,12 +129,12 @@ http_request_t* request_parser(http_request_t *request, char *buffer){
                 char *headers_end = strstr(headers_start, "\r\n\r\n");
                 if (headers_end) {
                         int headers_len = headers_end - headers_start;
-                        char *headers_buffer = strdup(headers_start, headers_len);
+                        char *headers_buffer = strndup(headers_start, headers_len);
                         parse_headers(headers_buffer, &request->headers, &request->header_count);
                         free(headers_buffer);
                         char *content_length_str = get_header(request->headers, request->header_count, "Content-Length");
                         if (content_length_str) {
-                                int content_length = atoi(content_legth_str);
+                                int content_length = atoi(content_length_str);
                                 char *body_start = headers_end + 4;
                                 if (strlen(body_start) >= content_length) {
                                         request->body = strndup(body_start, content_length);
