@@ -1,6 +1,7 @@
 #ifndef HTTP_PARSE
 #define HTTP_PARSE
 #include <stdint.h>
+#include <stddef.h>
 typedef struct{
 	int status_code;
 	char *version;
