@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+#include <ctype.h>
 
 http_request_t* init_http_request(){
         http_request_t *req = malloc(sizeof(http_request_t));
@@ -17,7 +18,7 @@ http_request_t* init_http_request(){
 }
 
 http_response_t* init_http_response(){
-        http_response_t *res = malloc(sizeof(http_response_t);
+        http_response_t *res = malloc(sizeof(http_response_t));
         res->status_code = 0;
         res->version = NULL;
         res->headers = NULL;
@@ -65,7 +66,7 @@ void parse_query_string(char *path, char **query_string, char **clean_path){
         char *qmark = strchr(path, '?');
         if(qmark) {
                 *query_string = strdup(qmark + 1);
-                *clean_path = strdup(path, qmark - path);
+                *clean_path = strndup(path, qmark - path);
         } else{
                 *query_string = NULL;
                 *clean_path = strdup(path);
