@@ -2,8 +2,10 @@
 #define HTTP_PARSE
 #include <stdint.h>
 #include <stddef.h>
+
 typedef struct{
 	int status_code;
+	char *reason_phrase;
 	char *version;
 	char **headers;
 	int8_t header_count; 
