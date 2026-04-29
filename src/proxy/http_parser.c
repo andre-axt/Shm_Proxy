@@ -105,6 +105,35 @@ char *get_header(char **headers, int header_count, const char *name) {
     return NULL;
 }
 
+char *parse_chunked_body(char *chunked_data, size_t *body_length) {
+        char *result = malloc(1);
+        int total_size = 0;
+        char *ptr = chunked_data;
+
+        while (*ptr) {
+                char *end = strstr(ptr, "\r\n");
+                if (!end) break;
+
+                int chunk_size = strtol(ptr, NULL, 16);
+                if (chunk_size == 0) break;
+
+                ptr = end + 2;
+                result = realloc(result, total_size + chunk_size + 1);
+                memcpy(result + total_size, ptr, chunk_size);
+                total_size += chunk_size;
+
+                ptr += chunk_size;
+                if (*ptr == '\r' && *(ptr+1) == '\n') {
+                        ptr += 2;
+                }
+                
+        }
+
+        result[total_size] = '\0';
+        *body_length = total_size;
+        return result;
+}
+
 http_request_t* request_parser(http_request_t *request, char *buffer){
         char *buffer_aux = strdup(buffer);
         char *line = strtok(buffer_aux, "\r\n");
