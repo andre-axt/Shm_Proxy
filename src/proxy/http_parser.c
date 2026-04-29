@@ -109,7 +109,10 @@ http_request_t* request_parser(http_request_t *request, char *buffer){
         char *buffer_aux = strdup(buffer);
         char *line = strtok(buffer_aux, "\r\n");
 
-        if (!line) return request;
+        if (!line){
+                free(buffer_aux);
+                return request;
+        } 
 
         char *method = strtok(line, " ");
         char *full_path = strtok(NULL, " ");
@@ -145,4 +148,71 @@ http_request_t* request_parser(http_request_t *request, char *buffer){
         free(buffer_aux);
         return request;
         
+}
+
+http_response_t* response_parser(http_response_t* response, char *buffer){
+        char *buffer_aux = strdup(buffer);
+        char *line = strtok(buffer_aux, "\r\n");
+
+        if(!line){
+                free(buffer_aux);
+                return response;      
+        } 
+
+        char *version = strtok(line, " "); 
+        int status = strtok(NULL, " "); 
+        char *reason_phrase = strtok(NULL, " "); 
+
+        if (version && status && reason_phrase){
+                response->version = strdup(version);
+                response->status = atoi(status);
+                reason_phrase = trim(reason_phrase);
+                response->reason_phrase = strdup(reason_phrase);
+        }
+
+        char *headers_start = strstr(buffer, "\r\n");
+        if (headers_start) {
+                headers_start += 2;
+                char *headers_end = strstr(headers_start, "\r\n\r\n");
+                if (headers_end) {
+                        int headers_len = headers_end - headers_start;
+                        char *headers_buffer = strndup(headers_start, headers_len);
+                        parse_headers(headers_buffer, &response->headers, &response->header_count);
+                        free(headers_buffer);
+
+                        char *body_start = headers_end + 4;
+                        int content_length = 0;
+
+                        for (int i = 0; i < response->header_count; i++) {
+                                if (strncasecmp(response->headers[i], "Content-Length:", 15) == 0) {
+                                        char *value = response->headers[i] + 15;
+                                        content_length = atoi(trim(value));
+                                        break;
+                                }
+                        }
+
+                        int is_chunked = 0;
+                        for (int i = 0; i < response->header_count; i++) {
+                                if (strncasecmp(response->headers[i], "Transfer-Enconding:", 18) == 0) {
+                                        char *value = response->headers[i] + 18;
+                                        if (strstr(trim(value, "chunked")) {
+                                                is_chunked = 1;
+                                                break;
+                                        }
+                                }
+                        }
+                        if (is_chunked) {
+                                response->body = parse_chunked_body(body_start, &response->body_length);
+                        }
+                        else if (content_length > 0){
+                                if (strlen(body_start) >= conten_length) {
+                                        response->body = strndup(body_start, content_length);
+                                        response->body_length = content_length;
+                                }
+                        }
+                }
+        }
+        
+        free(buffer_aux);
+        return response;
 }
