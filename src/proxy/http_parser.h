@@ -35,6 +35,7 @@ char *trim(char *str);
 int8_t parse_headers(char *buffer, char ***headers, int8_t *header_count);
 char *get_header(char **headers, int header_count, const char *name);
 void parser_query_string(char *path, char **query_string, char **clean_path);
+char *parse_chunked_body(char *chuncked_data, size_t *body_length);
 http_response_t* response_parser(http_response_t *response, char *buffer);
 http_request_t* request_parser(http_request_t *request, char *buffer);
 
