@@ -4,6 +4,7 @@
 #include <netinet/in.h>
 #include <stdint.h>
 #include <sys/epoll.h>
+#include "http_parser.h"
 
 #define MAX_EVENTS 10
 #define BUFFER_SIZE 8192
@@ -24,7 +25,8 @@ typedef struct {
 	char *buffer;
 	size_t buffer_len;
 	int	state;
-
+	http_response_t *res;
+	http_request_t *req;
 } Connection_t;
 
 int8_t create_server(Socket_t * sckt);
