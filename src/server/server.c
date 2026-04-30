@@ -92,13 +92,17 @@ int8_t read_buffer(Connection_t *conn){
 	strcpy(read_4_bytes, conn->buffer);
 	if(strstr(read_4_bytes, "http") != NULL){
 		http_response_t *response = init_http_response();
-		response_parser(response, conn->buffer);
-	}else if{
-		http_request_t *request = init_http_request();
-		request_parser(request, conn->buffer);
-	}else{
+		response = response_parser(response, conn->buffer);
 		free(read_4_bytes);
 		return 1;
+	}else if{
+		http_request_t *request = init_http_request();
+		request = request_parser(request, conn->buffer);
+		free(read_4_bytes);
+		return 2;
+	}else{
+		free(read_4_bytes);
+		return -1;
 	}
 
 	free(read_4_bytes);
