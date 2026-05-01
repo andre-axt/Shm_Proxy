@@ -45,10 +45,10 @@ int8_t start_listen(Socket_t * sckt){
 
 } 
 
-int8_t accept_new_connection(Connection_t *conn){
+int8_t accept_new_connection(Connection_t *conn, int *server_fd){
 	struct scckaddr *client_addr;
 	socklen_t client_len = sizeof(client_addr);
-	conn->client_fd = accept(conn->server_fd, *client_addr, client_len); 
+	conn->client_fd = accept(server_fd, *client_addr, client_len); 
 	if(conn->client_fd == -1){
 		char *msg = "Error - accept returned -1\n";
 		write(
