@@ -47,7 +47,19 @@ int main(){
 				conn->client_fd = events[i].data.fd;
 				if(read_client(conn) = 0){
 					if(conn->buffer > 0){
-						read_buffer(conn);
+						switch(read_buffer(conn)) {
+							case 0:
+								break;
+							case -1:
+								break;
+							case 2:
+								const char* host = get_headers(conn->res->headers, conn->res->header_count, "Host:");
+								if(host){
+									char *ip = get_ip_from_host(host);
+
+								}
+						}
+						
 					}	
 				}
 			}
