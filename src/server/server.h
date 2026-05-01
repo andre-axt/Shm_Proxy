@@ -21,7 +21,7 @@ typedef struct {
 
 typedef struct {
 	int	client_fd;
-	int	server_fd; // remote server
+	int	remote_server_fd; 
 	char *buffer;
 	size_t buffer_len;
 	int	state;
@@ -33,7 +33,7 @@ int8_t create_server(Socket_t * sckt);
 int8_t start_listen(Socket_t * sckt);
 int8_t close_server(Socket_t * sckt);
 int8_t set_nonbocking(Socket_t  *sckt);
-int8_t accept_new_connection(Connection_t *conn, int *socket_fd);
+int8_t accept_new_connection(Connection_t *conn, int *server_fd);
 char* get_ip_from_host(const char* hostname);
 int8_t read_client(Connection_t *conn);
 int8_t read_buffer(Connection_t *conn);
