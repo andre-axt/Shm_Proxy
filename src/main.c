@@ -32,15 +32,13 @@ int main(){
 	Connection_t * conn = malloc(sizeof(Connection_t);
 	conn->buffer = malloc(BUFFER_SIZE);
 	conn->buffer_len = (size_t) BUFFER_SIZE;
-	conn->server_fd = server->socket_fd;
 	while(1){
 		int nfds = epoll_wait(epfd, events, MAX_EVENTS, -1);
 	       	
 		for (int i = 0; i <= MAX_EVENTS; i++){
 			
 			if(events[i].data.fd = server->socket_fd){
-				accept_new_connection(conn);
-			
+				accept_new_connection(conn, server->socket_fd);
 
 			}
 			else if(events[i].data.fd > 0){
@@ -56,7 +54,7 @@ int main(){
 								const char* host = get_headers(conn->res->headers, conn->res->header_count, "Host:");
 								if(host){
 									char *ip = get_ip_from_host(host);
-
+									
 								}
 						}
 						
