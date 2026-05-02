@@ -72,6 +72,25 @@ int main(){
 									break;
 								case -1:
 									break;
+								case 1:
+									int result = send_response(conn);
+									if(result == 0){
+										if("keep-alive" == get_headers(conn->req->headers, conn->req-.header_count, "Connection:"){
+											conn->state = 0;
+											conn->buffer_len = 0;
+										} else {
+											remove_connection(conn);
+										}
+									} if else(result == 1) {
+										struct epoll_event ev;
+										ev.events = EPOLLIN | EPOLLOUT | EPOLLET;
+										ev.data.ptr = conn;
+										epoll_ctl(epfd, EPOLL_CTL_MOD, conn->client_fd, &ev);
+									} else {
+										remove_connection(conn);
+									}
+									break;
+									
 								case 2: 
 									const char* host = get_headers(conn->req->headers, conn->req->header_count, "Host:");
 									if(host){
@@ -109,6 +128,8 @@ int main(){
 											remove_connection(conn, i);
 										}
 									}
+									break;
+								default:
 									break;
 							}
 						}
