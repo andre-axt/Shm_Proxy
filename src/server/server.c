@@ -3,14 +3,14 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-int8_t set_nonbocking(Socket_t  *sckt) {
-	int flags = fcntl(sckt->socket_fd, F_GETFL, 0);
+int8_t set_nonbocking(int fd) {
+	int flags = fcntl(fd, F_GETFL, 0);
 	if (flags == -1){
 		char *msg = "Error - fcntl failed\n";
 		write(1, msg, 22);
 		return 1;
 	}
-	fcntl->socket_fd = fcntl(sckt_fd, F_SETFL, flags | 0_NONBLOCK); 
+	fcntl->socket_fd = fcntl(fd, F_SETFL, flags | 0_NONBLOCK); 
 	return 0;
 } 
 
