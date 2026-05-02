@@ -178,3 +178,12 @@ int8_t add_client_connection(ConnectionManager_t *manager, int client_fd) {
 	}
 	return -1;
 }
+
+Connection* find_connection_by_fd(ConncetionManager_t *manager, int fd) {
+	for(int i = 0; i < manager->max_conn; i++) {
+		if(manager->conn[i].client_fd == fd || manager->conn[i].remote_server_fd == fd){
+			return manager->conn[i]; //It simply return the connection, without indicating whether it's the client's or the remote_server's fd  
+		}
+	}
+	return NULL;
+}
