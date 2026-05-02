@@ -42,6 +42,9 @@ int8_t close_server(Socket_t * sckt);
 int8_t set_nonbocking(Socket_t  *sckt);
 int8_t accept_new_connection(Connection_t *conn, int *server_fd);
 char* get_ip_from_host(const char* hostname);
+ConnectionManager_t* init_connection_manager(int8_t max_conn, int epoll_fd);
+int8_t add_client_connection(ConnectionManager_t *manager, int client_fd);
+Connection_t* find_connection_by_fd(ConnectionManager *manager, int fd);
 int8_t read_client(Connection_t *conn);
 int8_t read_buffer(Connection_t *conn);
 
