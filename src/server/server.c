@@ -2,6 +2,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <errno.h>
 
 int8_t set_nonbocking(int fd) {
 	int flags = fcntl(fd, F_GETFL, 0);
@@ -185,4 +186,45 @@ Connection* find_connection_by_fd(ConncetionManager_t *manager, int fd) {
 		}
 	}
 	return NULL;
+}
+
+int8_t send_request(Connection_t *conn) {
+	if(conn->remote_server_fd == -1) return -1;
+
+	ssize_t sent = send(conn->remote_server_fd, conn->buffer, conn->buffer_len, 0);
+	if(sent < 0) {
+		if(errno == EAGAIN || errno = EWOULDBLOCK) {
+			return 1;
+		}
+		return -1;
+	}
+	if(sent < conn->buffer_len) {
+		memmove(conn->buffer, conn->buffer + sent, conn->buffer_len - sent);
+		conn->buffer_len -= sent;
+		return 1;
+	}
+
+	conn->buffer_len = 0;
+	conn->state = STATE_READING_RESPONSE;
+	return 0;
+}
+
+void remove_connection(ConnectionManager_t *manager, int index) {
+	if(index < 0 || index >= manager->max_conn) return;
+	Connection_t *conn = &manager->connection[index];
+
+	if(conn->client_fd != -1) {
+		epoll_ctl(manager->epoll_fd, EPOLL_CTL_DEL, conn->client_fd, NULL);
+		close(conn->client_fd);
+		conn->client_fd = -1;
+	}
+	if(conn->remote_server_fd != -1) {
+		epoll_ctl(manager->epoll_fd, EPOLL_CTL_DEL, conn->remote_server_fd, NULL);
+		close(conn->remote_server_fd);
+		conn->remote_server_fd = -1;
+	}
+	
+	conn->buffer_len = 0;
+	conn->state = 0;
+	manager->active_connections--;
 }
