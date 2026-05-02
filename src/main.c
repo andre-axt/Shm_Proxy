@@ -87,18 +87,26 @@ int main(){
 											remote_addr.sin_port = htons(80);
 											remote_addr.sin_addr.s_addr = inet_addr(ip);
 											
-											connect(conn->remote_server_fd, (struct sockaddr*)&remote_addr, sizeof(remote_addr)) < 0);
-											set_nonblocking(conn->remote_server_fd);
-
-											struct epoll_event ev;
-											ev.events = EPOLLIN | EPOLLOUT | EPOLLET;
-											ev.data.ptr = conn;
-
-											epoll_ctl(epfd, EPOLL_CTL_ADD, conn->remote_server_fd, &ev);
-
-											send_request(conn);
-											free(ip);
-										} 
+											if	(connect(conn->remote_server_fd, (struct sockaddr*)&remote_addr, sizeof(remote_addr)) < 0){
+												if	(errno != EINPROGRESS) {
+													remove_connection(conn, i);
+													break;
+												}
+												set_nonblocking(conn->remote_server_fd);
+	
+												struct epoll_event ev;
+												ev.events = EPOLLIN | EPOLLOUT | EPOLLET;
+												ev.data.ptr = conn;
+	
+												epoll_ctl(epfd, EPOLL_CTL_ADD, conn->remote_server_fd, &ev);
+	
+												send_request(conn);
+												free(ip);
+												
+											}
+										} else {
+											remove_connection(conn, i);
+										}
 									}
 									break;
 							}
