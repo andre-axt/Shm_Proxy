@@ -45,10 +45,14 @@ int8_t start_listen(Socket_t * sckt){
 
 } 
 
-int8_t read_client(Connection_t *conn){
+int8_t read_socket(Connection_t *conn, int8_t handler){
 	size_t total_read = 0;
 	size_t bytes_read;
-
+	if(handler > 2 || handler < 1){
+		char *msg = "Error - handler must be 1 or 2\n";
+		write(1, msg, 32);
+		return -1;
+	}
 	while(1) {
 		if (total_read + 4096 > conn->buffer_len){
 			size_t new_size = conn->buffer_size *2;
@@ -63,11 +67,19 @@ int8_t read_client(Connection_t *conn){
 			conn->buffer_size = new_size;
 			printf("New Buffer Size - %zu\n", new_size);
 		}
-		bytes_read = recv(conn->client_fd, conn->buffer + total_read, conn->buffer_len - total_read, 0);
-		if(bytes_read <= 0){
-			break;
+		if(handler == 1) {
+			bytes_read = recv(conn->client_fd, conn->buffer + total_read, conn->buffer_len - total_read, 0);
+			if(bytes_read <= 0){
+				break;
+			}
+			total_read += bytes_read;
+		}else {
+			bytes_read = recv(conn->remote_server_fd, conn->buffer + total_read, conn->buffer_len - total_read, 0);
+			if(bytes_read <= 0){
+				break;
+			}
+			total_read += bytes_read;
 		}
-		total_read += bytes_read;
 		
 	}
 	return 0;
