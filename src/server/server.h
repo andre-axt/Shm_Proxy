@@ -29,6 +29,13 @@ typedef struct {
 	http_request_t *req;
 } Connection_t;
 
+typedef struct {
+	Connection_t *connections;
+	int8_t max_conn;
+	int8_t act_conn;
+	int epoll_fd;
+} ConnectionManager_t;
+
 int8_t create_server(Socket_t * sckt);
 int8_t start_listen(Socket_t * sckt);
 int8_t close_server(Socket_t * sckt);
