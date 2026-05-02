@@ -137,3 +137,23 @@ char* get_ip_from_host(const char* hostname){
 	return ipstr;
 	
 }
+
+ConnectionManager_t* init_connection_manager(int8_t max_conn, int epoll_fd) {
+	ConnectionManager_t *manager = malloc(sizeof(ConnectionManagar_t));
+	manager->conn = calloc(max_conn, sizeof(Connection_t));
+	manager->max_conn = max_conn;
+	manager->act_conn = 0;
+	manager->epoll_fd = epoll_fd;
+
+	for(int i = 0; i < max_conn; i++) {
+		manager->conn[i].client_fd = -1;
+		manager->conn[i].remote_server_fd = -1;
+		manager->conn[i].buffer = malloc(BUFFER_SIZE);
+		manager->conn[i].buffer_len = 0;
+		manager->conn[i].state = 0;
+		manager->conn[i].res = malloc(sizeof(http_response_t));
+		manager->conn[i].req = malloc(sizeof(http_request_t));
+	}
+
+	return manager;
+}
