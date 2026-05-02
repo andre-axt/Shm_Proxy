@@ -19,7 +19,7 @@ int main(){
 
 	}
 	init_cache(cache);
-	if(set_nonblocking(server)){
+	if(set_nonblocking(server->socket_fd)){
 		return 1;
 	
 	}
@@ -53,26 +53,59 @@ int main(){
 
 			}
 			else if(events[i].data.fd > 0){
-				conn->client_fd = events[i].data.fd;
-				if(read_client(conn) == 0){
-					if(conn->buffer > 0){
-						switch(read_buffer(conn)) {
-							case 0:
-								break;
-							case -1:
-								break;
-							case 2:
-								const char* host = get_headers(conn->res->headers, conn->res->header_count, "Host:");
-								if(host){
-									char *ip = get_ip_from_host(host);
-									if(ip) {
-										co
+				int fd = events[i].data.fd;
+				int conn_idx = find_connection_by_fd(conn_manager, fd);
+
+				if(conn_idx == -1) continue;
+
+				Connection_t *conn = &conn_manager->connections[conn_idx];
+
+				if(fd == conn->client_fd && (events[i].events & EPOLLIN)){
+					if(read_socket(conn) == 0){
+					
+						if(conn->buffer > 0){
+							
+							switch(read_buffer(conn)) {
+								
+								case 0:
+									break;
+								case -1:
+									break;
+								case 2: 
+									const char* host = get_headers(conn->req->headers, conn->req->header_count, "Host:");
+									if(host){
+										char *ip = get_ip_from_host(host);
+										if(ip) {
+											conn->remote_server_fd = socket(AF_INET, SOCK_STREAM, 0);
+
+											if(conn->remote_server_fd < 0) {
+												break;
+											}
+
+											struct sockaddr_in remote_addr;
+											remote_addr.sin_family = AF_INET;
+											remote_addr.sin_port = htons(80);
+											remote_addr.sin_addr.s_addr = inet_addr(ip);
+											
+											connect(conn->remote_server_fd, (struct sockaddr*)&remote_addr, sizeof(remote_addr)) < 0);
+											set_nonblocking(conn->remote_server_fd);
+
+											struct epoll_event ev;
+											ev.events = EPOLLIN | EPOLLOUT | EPOLLET;
+											ev.data.ptr = conn;
+
+											epoll_ctl(epfd, EPOLL_CTL_ADD, conn->remote_server_fd, &ev);
+
+											send_request(conn);
+											free(ip);
+										} 
 									}
-								}
+									break;
+							}
 						}
-						
-					}	
+					}
 				}
+				
 			}
 			
 		
