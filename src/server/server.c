@@ -157,3 +157,24 @@ ConnectionManager_t* init_connection_manager(int8_t max_conn, int epoll_fd) {
 
 	return manager;
 }
+
+int8_t add_client_connection(ConnectionManager_t *manager, int client_fd) {
+	for(int i = 0; i < manager->max_conn; i++) {
+		if(manager->conn[i].client_fd == -1) {
+			manager->conn[i].client_fd = client_fd;
+			manager->conn[i].state = 0;
+			manager->conn[i].buffer_len = 0;
+			manager->act_conn++;
+
+			struct epoll_event ev;
+            ev.events = EPOLLIN | EPOLLET;
+            ev.data.fd = client_fd;
+            ev.data.ptr = &manager->connections[i];
+
+			epoll_ctl(manager->epoll_fd, EPOLL_CTL_ADD, client_fd, &ev);
+
+			return 1;
+		}
+	}
+	return -1;
+}
