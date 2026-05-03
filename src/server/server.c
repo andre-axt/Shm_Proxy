@@ -4,7 +4,7 @@
 #include <fcntl.h>
 #include <errno.h>
 
-int8_t set_nonbocking(int fd) {
+int8_t set_nonblocking(int fd) {
 	int flags = fcntl(fd, F_GETFL, 0);
 	if (flags == -1){
 		char *msg = "Error - fcntl failed\n";

@@ -1,4 +1,4 @@
-#ifndef 
+#ifndef SERVER_H
 #define SERVER_H
 
 #include <netinet/in.h>
@@ -8,6 +8,7 @@
 
 #define MAX_EVENTS 10
 #define BUFFER_SIZE 8192
+#define PORT 80
 
 typedef struct {
 	int	socket_fd;
@@ -39,11 +40,11 @@ typedef struct {
 int8_t create_server(Socket_t * sckt);
 int8_t start_listen(Socket_t * sckt);
 int8_t close_server(Socket_t * sckt);
-int8_t set_nonbocking(int fd);
+int8_t set_nonblocking(int fd);
 char* get_ip_from_host(const char* hostname);
 ConnectionManager_t* init_connection_manager(int8_t max_conn, int epoll_fd);
 int8_t add_client_connection(ConnectionManager_t *manager, int client_fd);
-Connection_t* find_connection_by_fd(ConnectionManager *manager, int fd);
+Connection_t* find_connection_by_fd(ConnectionManager_t *manager, int fd);
 int8_t send_request(Connection_t *conn);
 int8_t remove_connection(Connection_t *conn, int index);
 int8_t read_socket(Connection_t *conn, int8_t handler); // Set the handler to 1 to read the client socket and 2 to read the remote server socket, more features coming soon. :)

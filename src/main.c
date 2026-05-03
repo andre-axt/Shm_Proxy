@@ -1,6 +1,7 @@
 #include "server.h"
 #include "shm_cache.h"
 #include <errno.h>
+#include <stdlib.h>
 
 #define MAX_CONNECTIONS 1000
 

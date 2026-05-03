@@ -1,5 +1,5 @@
-#ifndef
-#define
+#ifndef	SHM_CACHE
+#define	SHM_CACHE
 
 #include <time.h>
 #include <stdint.h>
@@ -12,7 +12,7 @@ typedef struct {
 	char url[URL_MAX];
 	http_response_t response;
 	time_t timestamp;
-	CacheEntry_t *next;
+	struct CacheEntry_t *next;
 } CacheEntry_t;
 
 typedef struct {
