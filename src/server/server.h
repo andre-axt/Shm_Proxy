@@ -4,6 +4,7 @@
 #include <netinet/in.h>
 #include <stdint.h>
 #include <sys/epoll.h>
+#include <unistd.h>
 #include "http_parser.h"
 
 #define MAX_EVENTS 100

@@ -53,11 +53,9 @@ int main(){
 			}
 			else if(events[i].data.fd > 0){
 				int fd = events[i].data.fd;
-				int conn_idx = find_connection_by_fd(conn_manager, fd);
+				Connection_t *conn = find_connection_by_fd(conn_manager, fd);
 
-				if(conn_idx == -1) continue;
-
-				Connection_t *conn = &conn_manager->connections[conn_idx];
+				if(conn == -1) continue;
 
 				if(fd == conn->client_fd && (events[i].events & EPOLLIN)){
 					if(read_socket(conn) == 0){
