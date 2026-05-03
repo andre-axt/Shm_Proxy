@@ -188,10 +188,10 @@ Connection* find_connection_by_fd(ConncetionManager_t *manager, int fd) {
 	return NULL;
 }
 
-int8_t send_request(Connection_t *conn) {
-	if(conn->remote_server_fd == -1) return -1;
+int8_t send_buffer(Connection_t *conn, fd) {
+	if(fd == -1) return -1;
 
-	ssize_t sent = send(conn->remote_server_fd, conn->buffer, conn->buffer_len, 0);
+	ssize_t sent = send(fd, conn->buffer, conn->buffer_len, 0);
 	if(sent < 0) {
 		if(errno == EAGAIN || errno = EWOULDBLOCK) {
 			return 1;
