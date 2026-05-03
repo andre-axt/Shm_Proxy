@@ -58,7 +58,7 @@ int main(){
 				if(conn == -1) continue;
 
 				if(fd == conn->client_fd && (events[i].events & EPOLLIN)){
-					if(read_socket(conn) == 0){
+					if(read_socket(conn, 1) == 0){
 					
 						if(conn->buffer > 0){
 							
@@ -85,6 +85,29 @@ int main(){
 									} else {
 										remove_connection(conn);
 									}
+									break;
+									
+								case 2: 
+									break;
+								default:
+									break;
+							}
+						}
+					}
+				}
+
+				else if(fd == conn->remote_server_fd && (events[i].events & EPOLLIN)) {
+					if(read_socket(conn, 2) == 0){
+					
+						if(conn->buffer > 0){
+							
+							switch(read_buffer(conn)) {
+								
+								case 0:
+									break;
+								case -1:
+									break;
+								case 1:
 									break;
 									
 								case 2: 
