@@ -46,7 +46,7 @@ char* get_ip_from_host(const char* hostname);
 ConnectionManager_t* init_connection_manager(uint8_t max_conn, int epoll_fd);
 int8_t add_client_connection(ConnectionManager_t *manager, int client_fd);
 Connection_t* find_connection_by_fd(ConnectionManager_t *manager, int fd);
-int8_t send_buffer(int fd);
+int8_t send_buffer(int fd, char *buffer, size_t buffer_len);
 int8_t remove_connection(Connection_t *conn, int index);
 int8_t read_socket(Connection_t *conn, int8_t handler); // Set the handler to 1 to read the client socket and 2 to read the remote server socket, more features coming soon. :)
 int8_t read_buffer(Connection_t *conn);
