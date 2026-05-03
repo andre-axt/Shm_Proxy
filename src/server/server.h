@@ -6,7 +6,7 @@
 #include <sys/epoll.h>
 #include "http_parser.h"
 
-#define MAX_EVENTS 10
+#define MAX_EVENTS 100
 #define BUFFER_SIZE 8192
 #define PORT 80
 
@@ -23,8 +23,8 @@ typedef struct {
 typedef struct {
 	int	client_fd;
 	int	remote_server_fd; 
-	char *buffer;
-	size_t buffer_len;
+	char	*buffer;
+	size_t 	buffer_len;
 	int	state;
 	http_response_t *res;
 	http_request_t *req;
@@ -32,8 +32,8 @@ typedef struct {
 
 typedef struct {
 	Connection_t *connections;
-	int8_t max_conn;
-	int8_t act_conn;
+	uint8_t max_conn;
+	uint8_t act_conn;
 	int epoll_fd;
 } ConnectionManager_t;
 
@@ -42,7 +42,7 @@ int8_t start_listen(Socket_t * sckt);
 int8_t close_server(Socket_t * sckt);
 int8_t set_nonblocking(int fd);
 char* get_ip_from_host(const char* hostname);
-ConnectionManager_t* init_connection_manager(int8_t max_conn, int epoll_fd);
+ConnectionManager_t* init_connection_manager(uint8_t max_conn, int epoll_fd);
 int8_t add_client_connection(ConnectionManager_t *manager, int client_fd);
 Connection_t* find_connection_by_fd(ConnectionManager_t *manager, int fd);
 int8_t send_request(Connection_t *conn);

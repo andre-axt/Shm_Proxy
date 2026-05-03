@@ -1,9 +1,8 @@
 #include "server.h"
-#include "shm_cache.h"
 #include <errno.h>
 #include <stdlib.h>
 
-#define MAX_CONNECTIONS 1000
+#define MAX_CONNECTIONS 100
 
 int main(){
 	Socket_t *server = malloc(sizeof(Socket_t));
@@ -14,13 +13,11 @@ int main(){
 	server->address.sin_addr.s_addr = INADDR_ANY;
 	server->address.sin_port = htons(PORT);
 
-	Cache_t *cache = malloc(sizeof(Cache_t));
 	int epfd = epoll_create1(0);
 	if(create_server(server)){
 		return 1;
 
 	}
-	init_cache(cache);
 	if(set_nonblocking(server->socket_fd)){
 		return 1;
 	
@@ -76,7 +73,7 @@ int main(){
 								case 1:
 									int result = send_response(conn);
 									if(result == 0){
-										if("keep-alive" == get_headers(conn->req->headers, conn->req-.header_count, "Connection:"){
+										if("keep-alive" == get_headers(conn->req->headers, conn->req-.header_count, "Connection:")){
 											conn->state = 0;
 											conn->buffer_len = 0;
 										} else {
