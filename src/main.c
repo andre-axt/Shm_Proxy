@@ -55,12 +55,12 @@ int main(){
 				int fd = events[i].data.fd;
 				Connection_t *conn = find_connection_by_fd(conn_manager, fd);
 
-				if(conn == -1) continue;
+				if(conn == NULL) continue;
 
 				if(fd == conn->client_fd && (events[i].events & EPOLLIN)){
 					if(read_socket(conn, 1) == 0){
 					
-						if(conn->buffer > 0){
+						if(conn->buffer){
 							
 							switch(read_buffer(conn)) {
 								
@@ -69,13 +69,13 @@ int main(){
 								case -1:
 									break;
 								case 1:
-									int result = send_response(conn);
+									int result = send_buffer(conn, fd);
 									if(result == 0){
-										if("keep-alive" == get_headers(conn->req->headers, conn->req-.header_count, "Connection:")){
+										if("keep-alive" == get_header(conn->req->headers, conn->req-.header_count, "Connection:")){
 											conn->state = 0;
 											conn->buffer_len = 0;
 										} else {
-											remove_connection(conn);
+											remove_connection(conn, i);
 										}
 									} if else(result == 1) {
 										struct epoll_event ev;
@@ -83,7 +83,7 @@ int main(){
 										ev.data.ptr = conn;
 										epoll_ctl(epfd, EPOLL_CTL_MOD, conn->client_fd, &ev);
 									} else {
-										remove_connection(conn);
+										remove_connection(conn, i);
 									}
 									break;
 									
@@ -99,7 +99,7 @@ int main(){
 				else if(fd == conn->remote_server_fd && (events[i].events & EPOLLIN)) {
 					if(read_socket(conn, 2) == 0){
 					
-						if(conn->buffer > 0){
+						if(conn->buffer){
 							
 							switch(read_buffer(conn)) {
 								
@@ -111,7 +111,7 @@ int main(){
 									break;
 									
 								case 2: 
-									const char* host = get_headers(conn->req->headers, conn->req->header_count, "Host:");
+									const char* host = get_header(conn->req.headers, conn->req.header_count, "Host:");
 									if(host){
 										char *ip = get_ip_from_host(host);
 										if(ip) {
@@ -138,8 +138,8 @@ int main(){
 												ev.data.ptr = conn;
 	
 												epoll_ctl(epfd, EPOLL_CTL_ADD, conn->remote_server_fd, &ev);
-	
-												send_request(conn);
+												int
+												send_buffer(conn, conn->remote_server_fd);
 												free(ip);
 												
 											}
