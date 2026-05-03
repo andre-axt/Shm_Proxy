@@ -1,5 +1,7 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -g -pthread
+
+INCLUDES = -I$(SRCDIR) -I$(SERVERDIR) -I$(PROXYDIR) -I$(CACHEDIR)
+CFLAGS = -Wall -Wextra -g -pthread $(INCLUDES)
 
 LDLIBS = -pthread
 
