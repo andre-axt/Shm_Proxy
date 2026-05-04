@@ -1,11 +1,33 @@
 #include "server.h"
 #include <errno.h>
 #include <stdlib.h>
+#include <signal.h>
 
 #define MAX_CONNECTIONS 100
 
+Socket_t *server;
+int epfd;
+ConnectionManager_t *conn_manager;
+
+void stop_server(int sig){
+	if(server->socket_fd != -1 && server){
+		close(server->socket_fd);
+		free(server);
+	} else if(server != NULL){
+		free(server);
+	}
+	if(epfd != -1){
+		close(epfd);
+	}
+	if(conn_manager != NULL){
+		free_connection_manager(conn_manager);
+	}
+	exit(0);
+}
+
 int main(){
-	Socket_t *server = malloc(sizeof(Socket_t));
+	signal(SIGINT, stop_server);
+	server = malloc(sizeof(Socket_t));
 	server->domain = AF_INET;
 	server->type = SOCK_STREAM;
 	server->protocol = 0;
@@ -13,7 +35,7 @@ int main(){
 	server->address.sin_addr.s_addr = INADDR_ANY;
 	server->address.sin_port = htons(PORT);
 
-	int epfd = epoll_create1(0);
+	epfd = epoll_create1(0);
 	if(create_server(server)){
 		return 1;
 
@@ -30,7 +52,7 @@ int main(){
 	ev.events = EPOLLIN;
 	ev.data.fd = server->socket_fd;
 	epoll_ctl(epfd, EPOLL_CTL_ADD, server->socket_fd, &ev);
-	ConnectionManager_t *conn_manager = init_connection_manager(MAX_CONNECTIONS, epfd);
+	conn_manager = init_connection_manager(MAX_CONNECTIONS, epfd);
 	
 	while(1){
 		int nfds = epoll_wait(epfd, events, MAX_EVENTS, -1);
