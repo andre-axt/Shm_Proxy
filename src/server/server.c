@@ -107,7 +107,7 @@ int8_t read_buffer(Connection_t *conn) {
 
     for (int i = 0; i < num_methods; i++) {
         if (strncmp(conn->buffer, methods[i], strlen(methods[i])) == 0) {
-			size_t len strlen(methods[i]);
+			size_t len = strlen(methods[i]);
 			if (conn->buffer[len] == ' ' || conn->buffer[len] == '\0') {
 	            conn->req = init_http_request();
 	            conn->req = request_parser(conn->req, conn->buffer);
@@ -215,7 +215,7 @@ int8_t add_client_connection(ConnectionManager_t *manager, int client_fd) {
 Connection_t * find_connection_by_fd(ConnectionManager_t *manager, int fd) {
 	for(int i = 0; i < manager->max_conn; i++) {
 		if(manager->conn[i].client_fd == fd || manager->conn[i].remote_server_fd == fd){
-			return manager->conn[i]; //It simply return the connection, without indicating whether it's the client's or the remote_server's fd  
+			return &manager->conn[i]; //It simply return the connection, without indicating whether it's the client's or the remote_server's fd  
 		}
 	}
 	return NULL;
@@ -231,7 +231,7 @@ int8_t send_buffer(Connection_t *conn, int fd) {
 		}
 		return -1;
 	}
-	if(sent < conn->buffer_len) {
+	if((size_t)sent < conn->buffer_len) {
 		memmove(conn->buffer, conn->buffer + sent, conn->buffer_len - sent);
 		conn->buffer_len -= sent;
 		return 1;
