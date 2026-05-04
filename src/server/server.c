@@ -111,28 +111,28 @@ int8_t read_buffer(Connection_t *conn){
 }
 
 char* get_ip_from_host(const char* hostname){
-	struct addrinfo hints, *res;
+	struct addrinfo hints, *results;
 	static char ipstr[INET6_ADDRSTRLEN];
 
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
 
-	if (getaddrinfo(hostname, NULL, &hints, &res)  != 0) {
+	if (getaddrinfo(hostname, NULL, &hints, &results)  != 0) {
 		return NULL;
 	}
 
 	void *addr;
-	if (res->ai_family == AF_INET) {
-		struct sockaddr_in *ipv4 = (struct sockaddr_in *)res->ai_addr;
+	if (results->ai_family == AF_INET) {
+		struct sockaddr_in *ipv4 = (struct sockaddr_in *)results->ai_addr;
 		addr = &(ipv4->sin_addr);
 	} else {
-		struct sockaddr_in6 *ipv6 = (struct sockaddr_in6 *)res->ai_addr;
+		struct sockaddr_in6 *ipv6 = (struct sockaddr_in6 *)results->ai_addr;
 		addr = &(ipv6->sin6_addr);
 	}
 
-	inet_ntop(res->ai_family, addr, ipstr, sizeof(ipstr));
-	freeaddrinfo(res);
+	inet_ntop(results->ai_family, addr, ipstr, sizeof(ipstr));
+	freeaddrinfo(results);
 
 	return ipstr;
 	
