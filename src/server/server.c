@@ -94,27 +94,28 @@ int8_t read_socket(Connection_t *conn, int8_t handler){
 
 }
 
-int8_t read_buffer(Connection_t *conn){
-	char *read_4_bytes = malloc(4);
-	strcpy(read_4_bytes, conn->buffer);
-	if(strstr(read_4_bytes, "http") != NULL){
-		conn->res = init_http_response();
-		conn->res = response_parser(conn->res, conn->buffer);
-		free(read_4_bytes);
-		return 1;
-	}else if{
-		conn->req = init_http_request();
-		conn->req = request_parser(conn->req, conn->buffer);
-		free(read_4_bytes);
-		return 2;
-	}else{
-		free(read_4_bytes);
-		return -1;
-	}
-
-	free(read_4_bytes);
-	return 0;
+int8_t read_buffer(Connection_t *conn) {
+    const char *methods[] = {"GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"};
+    int8_t num_methods = sizeof(methods) / sizeof(methods[0]);
 	
+    if (strncmp(conn->buffer, "HTTP", 4) == 0) {
+        conn->res = init_http_response();
+        conn->res = response_parser(conn->res, conn->buffer);
+        return 1;
+    }
+
+    for (int i = 0; i < num_methods; i++) {
+        if (strncmp(conn->buffer, methods[i], strlen(methods[i])) == 0) {
+			size_t len strlen(methods[i]);
+			if (conn->buffer[len] == ' ' || conn->buffer[len] == '\0') {
+	            conn->req = init_http_request();
+	            conn->req = request_parser(conn->req, conn->buffer);
+				return 2; 
+		    }
+        }
+    }
+
+    return -1; 
 }
 
 char* get_ip_from_host(const char* hostname){
