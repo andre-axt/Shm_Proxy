@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <sys/epoll.h>
 #include <unistd.h>
+#include <arpa/inet.h>
 #include "http_parser.h"
 
 #define MAX_EVENTS 100
@@ -32,7 +33,7 @@ typedef struct {
 } Connection_t;
 
 typedef struct {
-	Connection_t *connections;
+	Connection_t *conn;
 	uint8_t max_conn;
 	uint8_t act_conn;
 	int epoll_fd;
@@ -44,6 +45,7 @@ int8_t close_server(Socket_t * sckt);
 int8_t set_nonblocking(int fd);
 char* get_ip_from_host(const char* hostname);
 ConnectionManager_t* init_connection_manager(uint8_t max_conn, int epoll_fd);
+void free_connection_manager(ConnectionManager_t* conn_manager);
 int8_t add_client_connection(ConnectionManager_t *manager, int client_fd);
 Connection_t* find_connection_by_fd(ConnectionManager_t *manager, int fd);
 int8_t send_buffer(Connection_t *conn, int fd);

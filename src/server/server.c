@@ -139,7 +139,7 @@ char* get_ip_from_host(const char* hostname){
 }
 
 ConnectionManager_t* init_connection_manager(uint8_t max_conn, int epoll_fd) {
-	ConnectionManager_t *manager = malloc(sizeof(ConnectionManagar_t));
+	ConnectionManager_t *manager = malloc(sizeof(ConnectionManager_t));
 	manager->conn = calloc(max_conn, sizeof(Connection_t));
 	manager->max_conn = max_conn;
 	manager->act_conn = 0;
@@ -156,6 +156,30 @@ ConnectionManager_t* init_connection_manager(uint8_t max_conn, int epoll_fd) {
 	}
 
 	return manager;
+}
+
+void free_connection_manager(ConnectionManager_t* conn_manager){
+	if (!conn_manager) return;
+
+	for (int i = 0; i < conn_manager->act_conn; i++){
+		if (conn_manager->conn[i].buffer) {
+			free(conn_manager->conn[i].buffer;
+		
+		}
+		if (conn_manager->conn[i].res) {
+			free(conn_manager->conn[i].res;
+		
+		}
+		if (conn_manager->conn[i].req) {
+			free(conn_manager->conn[i].req;
+
+		}
+	
+	}
+
+	free(conn_manager->conn);
+	free(conn_manager);
+
 }
 
 int8_t add_client_connection(ConnectionManager_t *manager, int client_fd) {

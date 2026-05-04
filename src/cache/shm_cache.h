@@ -3,6 +3,7 @@
 
 #include <time.h>
 #include <stdint.h>
+#include "http_parser.h"
 
 #define TABLE_SIZE 10
 #define URL_MAX	256

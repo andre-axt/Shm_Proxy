@@ -71,13 +71,13 @@ int main(){
 								case 1:
 									int result = send_buffer(conn, fd);
 									if(result == 0){
-										if("keep-alive" == get_header(conn->req->headers, conn->req-.header_count, "Connection:")){
+										if("keep-alive" == get_header(conn->req->headers, conn->req->header_count, "Connection:")){
 											conn->state = 0;
 											conn->buffer_len = 0;
 										} else {
 											remove_connection(conn, i);
 										}
-									} if else(result == 1) {
+									} else if(result == 1) {
 										struct epoll_event ev;
 										ev.events = EPOLLIN | EPOLLOUT | EPOLLET;
 										ev.data.ptr = conn;
@@ -111,7 +111,7 @@ int main(){
 									break;
 									
 								case 2: 
-									const char* host = get_header(conn->req.headers, conn->req.header_count, "Host:");
+									const char* host = get_header(conn->req->headers, conn->req->header_count, "Host:");
 									if(host){
 										char *ip = get_ip_from_host(host);
 										if(ip) {
@@ -124,9 +124,11 @@ int main(){
 											struct sockaddr_in remote_addr;
 											remote_addr.sin_family = AF_INET;
 											remote_addr.sin_port = htons(80);
-											remote_addr.sin_addr.s_addr = inet_addr(ip);
+											if (inet_pton(remote_addr.sin_family, ip, &remote_addr.sin_addr) <= 0) {
+												break;
+											}
 											
-											if	(connect(conn->remote_server_fd, (struct sockaddr*)&remote_addr, sizeof(remote_addr)) < 0){
+											if (connect(conn->remote_server_fd, (struct sockaddr*)&remote_addr, sizeof(remote_addr)) < 0){
 												if	(errno != EINPROGRESS) {
 													remove_connection(conn, i);
 													break;
@@ -138,7 +140,6 @@ int main(){
 												ev.data.ptr = conn;
 	
 												epoll_ctl(epfd, EPOLL_CTL_ADD, conn->remote_server_fd, &ev);
-												int
 												send_buffer(conn, conn->remote_server_fd);
 												free(ip);
 												
@@ -161,6 +162,9 @@ int main(){
 		}	
 	
 	}
-	free(conn->buffer);
-	free(conn);
+
+	close(epfd);
+	close(server->socket_fd);
+	free(server);
+	free_connection_manager(conn_manager);
 }
