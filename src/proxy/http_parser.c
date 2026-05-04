@@ -189,12 +189,12 @@ http_response_t* response_parser(http_response_t* response, char *buffer){
         } 
 
         char *version = strtok(line, " "); 
-        int status = strtok(NULL, " "); 
+        char *status = strtok(NULL, " "); 
         char *reason_phrase = strtok(NULL, " "); 
 
         if (version && status && reason_phrase){
                 response->version = strdup(version);
-                response->status = atoi(status);
+                response->status_code = atoi(status);
                 reason_phrase = trim(reason_phrase);
                 response->reason_phrase = strdup(reason_phrase);
         }
@@ -224,7 +224,7 @@ http_response_t* response_parser(http_response_t* response, char *buffer){
                         for (int i = 0; i < response->header_count; i++) {
                                 if (strncasecmp(response->headers[i], "Transfer-Enconding:", 18) == 0) {
                                         char *value = response->headers[i] + 18;
-                                        if (strstr(trim(value, "chunked")) {
+                                        if (strstr(trim(value), "chunked")) {
                                                 is_chunked = 1;
                                                 break;
                                         }
@@ -234,7 +234,7 @@ http_response_t* response_parser(http_response_t* response, char *buffer){
                                 response->body = parse_chunked_body(body_start, &response->body_length);
                         }
                         else if (content_length > 0){
-                                if (strlen(body_start) >= conten_length) {
+                                if (strlen(body_start) >= content_length) {
                                         response->body = strndup(body_start, content_length);
                                         response->body_length = content_length;
                                 }
