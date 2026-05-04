@@ -3,6 +3,9 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 int8_t set_nonblocking(int fd) {
 	int flags = fcntl(fd, F_GETFL, 0);
@@ -11,7 +14,7 @@ int8_t set_nonblocking(int fd) {
 		write(1, msg, 22);
 		return 1;
 	}
-	fcntl->socket_fd = fcntl(fd, F_SETFL, flags | 0_NONBLOCK); 
+	fd = fcntl(fd, F_SETFL, flags | O_NONBLOCK); 
 	return 0;
 } 
 
@@ -22,7 +25,7 @@ int8_t create_server(Socket_t * sckt){
 		write(1, msg, 32);
 		return 1;
 	}
-	if(bind(sckt->socket_fd, (struct sockaddr *) sckt->address, sizeof(sckt->address)) < 0) {
+	if(bind(sckt->socket_fd, (struct sockaddr *) &sckt->address, sizeof(sckt->address)) < 0) {
 		char *msg = "Error - failed to bind socket\n";
         write(1, msg, 30);
         return 1;	
@@ -33,7 +36,7 @@ int8_t create_server(Socket_t * sckt){
 }
 
 int8_t start_listen(Socket_t * sckt){
-	int *opt =1;
+	int opt = 1;
 	setsockopt(sckt->socket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
 	if(listen(sckt->socket_fd, sckt->backlog) < 0){
@@ -56,7 +59,7 @@ int8_t read_socket(Connection_t *conn, int8_t handler){
 	}
 	while(1) {
 		if (total_read + 4096 > conn->buffer_len){
-			size_t new_size = conn->buffer_size *2;
+			size_t new_size = conn->buffer_len *2;
 			char *new_buffer = realloc(conn->buffer, new_size);
 			if(!new_buffer){
 				char *msg = "Error - realloc\n";
@@ -65,7 +68,11 @@ int8_t read_socket(Connection_t *conn, int8_t handler){
 			} 
 
 			conn->buffer = new_buffer;
-			conn->buffer_size = new_size;
+			conn->buffer_len = new_size;
+			char msg[50];
+
+			int8_t msg_size = snprintf(msg, sizeof(msg), "New Buffer Size: %zu\n", new_size);
+			write(1, msg, msg_size);
 			printf("New Buffer Size - %zu\n", new_size);
 		}
 		if(handler == 1) {
@@ -92,12 +99,12 @@ int8_t read_buffer(Connection_t *conn){
 	strcpy(read_4_bytes, conn->buffer);
 	if(strstr(read_4_bytes, "http") != NULL){
 		conn->res = init_http_response();
-		conn->res = response_parser(response, conn->buffer);
+		conn->res = response_parser(conn->res, conn->buffer);
 		free(read_4_bytes);
 		return 1;
 	}else if{
 		conn->req = init_http_request();
-		conn->req = request_parser(request, conn->buffer);
+		conn->req = request_parser(conn->req, conn->buffer);
 		free(read_4_bytes);
 		return 2;
 	}else{
@@ -193,7 +200,7 @@ int8_t add_client_connection(ConnectionManager_t *manager, int client_fd) {
 			struct epoll_event ev;
             ev.events = EPOLLIN | EPOLLET;
             ev.data.fd = client_fd;
-            ev.data.ptr = &manager->connections[i];
+            ev.data.ptr = &manager->conn[i];
 
 			epoll_ctl(manager->epoll_fd, EPOLL_CTL_ADD, client_fd, &ev);
 
@@ -203,7 +210,7 @@ int8_t add_client_connection(ConnectionManager_t *manager, int client_fd) {
 	return -1;
 }
 
-Connection* find_connection_by_fd(ConncetionManager_t *manager, int fd) {
+Connection_t * find_connection_by_fd(ConncetionManager_t *manager, int fd) {
 	for(int i = 0; i < manager->max_conn; i++) {
 		if(manager->conn[i].client_fd == fd || manager->conn[i].remote_server_fd == fd){
 			return manager->conn[i]; //It simply return the connection, without indicating whether it's the client's or the remote_server's fd  
@@ -212,7 +219,7 @@ Connection* find_connection_by_fd(ConncetionManager_t *manager, int fd) {
 	return NULL;
 }
 
-int8_t send_buffer(Connection_t *conn, fd) {
+int8_t send_buffer(Connection_t *conn, int fd) {
 	if(fd == -1) return -1;
 
 	ssize_t sent = send(fd, conn->buffer, conn->buffer_len, 0);
@@ -235,7 +242,7 @@ int8_t send_buffer(Connection_t *conn, fd) {
 
 void remove_connection(ConnectionManager_t *manager, int index) {
 	if(index < 0 || index >= manager->max_conn) return;
-	Connection_t *conn = &manager->connection[index];
+	Connection_t *conn = &manager->conn[index];
 
 	if(conn->client_fd != -1) {
 		epoll_ctl(manager->epoll_fd, EPOLL_CTL_DEL, conn->client_fd, NULL);
@@ -250,5 +257,5 @@ void remove_connection(ConnectionManager_t *manager, int index) {
 	
 	conn->buffer_len = 0;
 	conn->state = 0;
-	manager->active_connections--;
+	manager->act_conn--;
 }
