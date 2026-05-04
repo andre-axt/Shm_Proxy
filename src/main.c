@@ -75,7 +75,7 @@ int main(){
 											conn->state = 0;
 											conn->buffer_len = 0;
 										} else {
-											remove_connection(conn, i);
+											remove_connection(conn_manager, i);
 										}
 									} else if(result == 1) {
 										struct epoll_event ev;
@@ -83,7 +83,7 @@ int main(){
 										ev.data.ptr = conn;
 										epoll_ctl(epfd, EPOLL_CTL_MOD, conn->client_fd, &ev);
 									} else {
-										remove_connection(conn, i);
+										remove_connection(conn_manager, i);
 									}
 									break;
 									
@@ -130,7 +130,7 @@ int main(){
 											
 											if (connect(conn->remote_server_fd, (struct sockaddr*)&remote_addr, sizeof(remote_addr)) < 0){
 												if	(errno != EINPROGRESS) {
-													remove_connection(conn, i);
+													remove_connection(conn_manager, i);
 													break;
 												}
 												set_nonblocking(conn->remote_server_fd);
@@ -145,7 +145,7 @@ int main(){
 												
 											}
 										} else {
-											remove_connection(conn, i);
+											remove_connection(conn_manager, i);
 										}
 									}
 									break;
