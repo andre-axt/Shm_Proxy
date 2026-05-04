@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <netdb.h>
 
 int8_t set_nonblocking(int fd) {
 	int flags = fcntl(fd, F_GETFL, 0);
@@ -171,15 +172,15 @@ void free_connection_manager(ConnectionManager_t* conn_manager){
 
 	for (int i = 0; i < conn_manager->act_conn; i++){
 		if (conn_manager->conn[i].buffer) {
-			free(conn_manager->conn[i].buffer;
+			free(conn_manager->conn[i].buffer);
 		
 		}
 		if (conn_manager->conn[i].res) {
-			free(conn_manager->conn[i].res;
+			free(conn_manager->conn[i].res);
 		
 		}
 		if (conn_manager->conn[i].req) {
-			free(conn_manager->conn[i].req;
+			free(conn_manager->conn[i].req);
 
 		}
 	
@@ -211,7 +212,7 @@ int8_t add_client_connection(ConnectionManager_t *manager, int client_fd) {
 	return -1;
 }
 
-Connection_t * find_connection_by_fd(ConncetionManager_t *manager, int fd) {
+Connection_t * find_connection_by_fd(ConnectionManager_t *manager, int fd) {
 	for(int i = 0; i < manager->max_conn; i++) {
 		if(manager->conn[i].client_fd == fd || manager->conn[i].remote_server_fd == fd){
 			return manager->conn[i]; //It simply return the connection, without indicating whether it's the client's or the remote_server's fd  
@@ -225,7 +226,7 @@ int8_t send_buffer(Connection_t *conn, int fd) {
 
 	ssize_t sent = send(fd, conn->buffer, conn->buffer_len, 0);
 	if(sent < 0) {
-		if(errno == EAGAIN || errno = EWOULDBLOCK) {
+		if(errno == EAGAIN || errno == EWOULDBLOCK) {
 			return 1;
 		}
 		return -1;
@@ -237,7 +238,6 @@ int8_t send_buffer(Connection_t *conn, int fd) {
 	}
 
 	conn->buffer_len = 0;
-	conn->state = STATE_READING_RESPONSE;
 	return 0;
 }
 
