@@ -165,7 +165,7 @@ http_request_t* request_parser(http_request_t *request, char *buffer){
                         free(headers_buffer);
                         char *content_length_str = get_header(request->headers, request->header_count, "Content-Length");
                         if (content_length_str) {
-                                int content_length = atoi(content_length_str);
+                                long unsigned int content_length = (long unsigned int)atoi(content_length_str);
                                 char *body_start = headers_end + 4;
                                 if (strlen(body_start) >= content_length) {
                                         request->body = strndup(body_start, content_length);
@@ -210,12 +210,12 @@ http_response_t* response_parser(http_response_t* response, char *buffer){
                         free(headers_buffer);
 
                         char *body_start = headers_end + 4;
-                        int content_length = 0;
+                        long unsigned int content_length = 0;
 
                         for (int i = 0; i < response->header_count; i++) {
                                 if (strncasecmp(response->headers[i], "Content-Length:", 15) == 0) {
                                         char *value = response->headers[i] + 15;
-                                        content_length = atoi(trim(value));
+                                        content_length = (long unsigned int)atoi(trim(value));
                                         break;
                                 }
                         }
