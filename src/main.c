@@ -36,17 +36,28 @@ int main(){
 	server->address.sin_port = htons(PORT);
 
 	epfd = epoll_create1(0);
-	if(create_server(server)){
-		return 1;
-
+	switch(create_server(server)){
+		case -1: 
+			free(server);
+			return 1;
+			break;
+		case 1:
+			free(server);
+			close(server->socket_fd);
+			return 1;
+			break;
 	}
 	if(set_nonblocking(server->socket_fd)){
+		close(server->socket_fd);
+		free(server);
 		return 1;
 	
 	}
 	
     struct epoll_event ev, events[MAX_EVENTS]; 	
 	if(start_listen(server)){
+		close(server->socket_fd);
+		free(server);
 		return 1;
 	}
 	ev.events = EPOLLIN;
