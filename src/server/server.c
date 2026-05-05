@@ -24,7 +24,7 @@ int8_t create_server(Socket_t * sckt){
 	if(sckt->socket_fd < 0){
 		char *msg = "Error - failed to create socket\n";
 		write(1, msg, 32);
-		return 1;
+		return -1;
 	}
 	if(bind(sckt->socket_fd, (struct sockaddr *) &sckt->address, sizeof(sckt->address)) < 0) {
 		char *msg = "Error - failed to bind socket\n";
