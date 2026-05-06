@@ -96,13 +96,15 @@ int8_t parse_headers(char *buffer, char ***headers, int8_t *header_count) {
 }
 
 char *get_header(char **headers, int header_count, const char *name) {
-    for (int i = 0; i < header_count; i++) {
-        if (strncasecmp(headers[i], name, strlen(name)) == 0 && headers[i][strlen(name)] == ':') {
-            char *value = headers[i] + strlen(name) + 1; 
-            return trim(value);
+        for (int i = 0; i < header_count; i++) {
+                if (strncasecmp(headers[i], name, strlen(name)) == 0 && headers[i][strlen(name)] == ':') {
+                        char *value = headers[i] + strlen(name) + 1; 
+                        return trim(value);
+                }
         }
-    }
-    return NULL;
+        char *msg = "Error - get header returned NULL";
+        write(1, msg, 32);
+        return NULL;
 }
 
 char *parse_chunked_body(char *chunked_data, size_t *body_length) {
@@ -177,6 +179,8 @@ http_request_t* request_parser(http_request_t *request, char *buffer){
         }
 
         free(buffer_aux);
+        char *msg = "Success - request parser";
+        write(1, msg, 24);
         return request;
         
 }
@@ -187,6 +191,8 @@ http_response_t* response_parser(http_response_t* response, char *buffer){
 
         if(!line){
                 free(buffer_aux);
+                char *msg = "Error - response parser failed";
+                write(1, msg, 30);
                 return response;      
         } 
 
@@ -245,5 +251,7 @@ http_response_t* response_parser(http_response_t* response, char *buffer){
         }
         
         free(buffer_aux);
+        char *msg = "Success - response parser";
+        write(1, msg, 25);
         return response;
 }
