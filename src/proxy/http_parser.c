@@ -130,9 +130,12 @@ char *parse_chunked_body(char *chunked_data, size_t *body_length) {
                 }
                 
         }
-
+        
         result[total_size] = '\0';
+        char final_result[total_size];
+        strcpy(final_result, result);
         *body_length = total_size;
+        free(result);
         return result;
 }
 
