@@ -39,17 +39,23 @@ int main(){
 	switch(create_server(server)){
 		case -1: 
 			free(server);
+			char *msg = "Error - socket create failed";
+			wirte(1, msg, 28);
 			return 1;
 			break;
 		case 1:
 			free(server);
 			close(server->socket_fd);
+			char *msg = "Error - bind socket failed";
+			wirte(1, msg, 26);
 			return 1;
 			break;
 	}
 	if(set_nonblocking(server->socket_fd)){
 		close(server->socket_fd);
 		free(server);
+		char *msg = "Error - set nonblocking failed";
+		write(1, msg, 30);
 		return 1;
 	
 	}
@@ -58,6 +64,8 @@ int main(){
 	if(start_listen(server)){
 		close(server->socket_fd);
 		free(server);
+		char *msg = "Error - listen socket failed";
+		write(1, msg, 28);
 		return 1;
 	}
 	ev.events = EPOLLIN;
