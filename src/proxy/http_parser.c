@@ -3,6 +3,7 @@
 #include <string.h>
 #include <strings.h>
 #include <ctype.h>
+#include <unistd.h>
 
 http_request_t* init_http_request(){
         http_request_t *req = malloc(sizeof(http_request_t));
@@ -145,7 +146,7 @@ http_request_t* request_parser(http_request_t *request, char *buffer){
 
         if (!line){
                 free(buffer_aux);
-                char msg* = "Error - request parser failed";
+                char *msg = "Error - request parser failed";
                 write(1, msg, 29);
                 return request;
         } 
