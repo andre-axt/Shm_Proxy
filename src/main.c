@@ -87,6 +87,8 @@ int main(){
 					set_nonblocking(client_fd);
 					int8_t idx = add_client_connection(conn_manager, client_fd);
 					if(idx == -1) {
+						char *msg = "Error - add client to epoll failed";
+						write(1, msg, 34);
 						close(client_fd);
 					}
 				}
@@ -96,7 +98,11 @@ int main(){
 				int fd = events[i].data.fd;
 				Connection_t *conn = find_connection_by_fd(conn_manager, fd);
 
-				if(conn == NULL) continue;
+				if(conn == NULL){
+					char *msg = "Error - find connection by fd failed";
+					write(1, msg, 35);
+					continue;	
+				} 
 
 				if(fd == conn->client_fd && (events[i].events & EPOLLIN)){
 					if(read_socket(conn, 1) == 0){
@@ -104,10 +110,9 @@ int main(){
 						if(conn->buffer){
 							
 							switch(read_buffer(conn)) {
-								
-								case 0:
-									break;
 								case -1:
+									char *msg = "Error - read buffer failed";
+									write(1, msg, 35);
 									break;
 								case 1:
 									int result = send_buffer(conn, fd);
@@ -116,6 +121,8 @@ int main(){
 											conn->state = 0;
 											conn->buffer_len = 0;
 										} else {
+											char *msg = "Connection removed";
+											write(1, msg, 18);
 											remove_connection(conn_manager, i);
 										}
 									} else if(result == 1) {
@@ -124,6 +131,8 @@ int main(){
 										ev.data.ptr = conn;
 										epoll_ctl(epfd, EPOLL_CTL_MOD, conn->client_fd, &ev);
 									} else {
+										char *msg = "Connection removed";
+										write(1, msg, 18);
 										remove_connection(conn_manager, i);
 									}
 									break;
@@ -143,10 +152,9 @@ int main(){
 						if(conn->buffer){
 							
 							switch(read_buffer(conn)) {
-								
-								case 0:
-									break;
 								case -1:
+									char *msg = "Error - read buffer failed";
+									write(1, msg, 35);
 									break;
 								case 1:
 									break;
@@ -171,6 +179,8 @@ int main(){
 											
 											if (connect(conn->remote_server_fd, (struct sockaddr*)&remote_addr, sizeof(remote_addr)) < 0){
 												if	(errno != EINPROGRESS) {
+													char *msg = "Connection removed";
+													write(1, msg, 18);
 													remove_connection(conn_manager, i);
 													break;
 												}
@@ -186,6 +196,8 @@ int main(){
 												
 											}
 										} else {
+											char *msg = "Connection removed";
+											write(1, msg, 18);
 											remove_connection(conn_manager, i);
 										}
 									}
