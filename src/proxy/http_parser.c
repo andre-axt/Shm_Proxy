@@ -137,7 +137,7 @@ char *parse_chunked_body(char *chunked_data, size_t *body_length) {
         strcpy(final_result, result);
         *body_length = total_size;
         free(result);
-        return result;
+        return final_result;
 }
 
 http_request_t* request_parser(http_request_t *request, char *buffer){
