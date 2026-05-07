@@ -37,18 +37,20 @@ int main(){
 
 	epfd = epoll_create1(0);
 	switch(create_server(server)){
-		case -1: 
+		case -1: {
 			free(server);
 			char *msg = "Error - socket create failed";
-			wirte(1, msg, 28);
+			write(1, msg, 28);
 			return 1;
+		}
 			break;
-		case 1:
+		case 1: {
 			free(server);
 			close(server->socket_fd);
 			char *msg = "Error - bind socket failed";
-			wirte(1, msg, 26);
+			write(1, msg, 26);
 			return 1;
+		}
 			break;
 	}
 	if(set_nonblocking(server->socket_fd)){
@@ -110,11 +112,12 @@ int main(){
 						if(conn->buffer){
 							
 							switch(read_buffer(conn)) {
-								case -1:
+								case -1: {
 									char *msg = "Error - read buffer failed";
 									write(1, msg, 35);
+								}
 									break;
-								case 1:
+								case 1: {
 									int result = send_buffer(conn, fd);
 									if(result == 0){
 										if("keep-alive" == get_header(conn->req->headers, conn->req->header_count, "Connection:")){
@@ -135,6 +138,7 @@ int main(){
 										write(1, msg, 18);
 										remove_connection(conn_manager, i);
 									}
+								}
 									break;
 									
 								case 2: 
@@ -152,14 +156,15 @@ int main(){
 						if(conn->buffer){
 							
 							switch(read_buffer(conn)) {
-								case -1:
+								case -1: {
 									char *msg = "Error - read buffer failed";
 									write(1, msg, 35);
+								}
 									break;
 								case 1:
 									break;
 									
-								case 2: 
+								case 2: {
 									const char* host = get_header(conn->req->headers, conn->req->header_count, "Host:");
 									if(host){
 										char *ip = get_ip_from_host(host);
@@ -201,6 +206,7 @@ int main(){
 											remove_connection(conn_manager, i);
 										}
 									}
+								}
 									break;
 								default:
 									break;
