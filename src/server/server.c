@@ -191,7 +191,7 @@ void free_connection_manager(ConnectionManager_t* conn_manager){
 
 }
 
-int8_t add_client_connection(ConnectionManager_t *manager, int client_fd) {
+Connection_t* add_client_connection(ConnectionManager_t *manager, int client_fd) {
 	for(int i = 0; i < manager->max_conn; i++) {
 		if(manager->conn[i].client_fd == -1) {
 			manager->conn[i].client_fd = client_fd;
@@ -206,10 +206,10 @@ int8_t add_client_connection(ConnectionManager_t *manager, int client_fd) {
 
 			epoll_ctl(manager->epoll_fd, EPOLL_CTL_ADD, client_fd, &ev);
 
-			return 1;
+			return manager->conn[i];
 		}
 	}
-	return -1;
+	return NULL;
 }
 
 Connection_t * find_connection_by_fd(ConnectionManager_t *manager, int fd) {
