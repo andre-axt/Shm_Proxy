@@ -221,6 +221,15 @@ Connection_t * find_connection_by_fd(ConnectionManager_t *manager, int fd) {
 	return NULL;
 }
 
+int find_idx_by_fd(ConnectionManager_t *manager, int fd) {
+	for(int i = 0; i < manager->max_conn; i++) {
+		if(manager->conn[i].client_fd == fd || manager->conn[i].remote_server_fd == fd){
+			return i;
+		}
+	}
+	return -1;
+}
+
 int8_t send_buffer(Connection_t *conn, int fd) {
 	if(fd == -1) return -1;
 
