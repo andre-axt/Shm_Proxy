@@ -95,7 +95,8 @@ int main(){
 					}
 					conn->remote_server_fd = socket(AF_INET, SOCK_STREAM, 0);
 			        if(conn->remote_server_fd < 0) {
-			            remove_connection(conn_manager, conn->id);
+						int idx = find_idx_by_fd(conn_manager, conn->remote_server_fd);
+			            remove_connection(conn_manager, idx);
 			            continue;
 			        }
 				}
@@ -133,7 +134,9 @@ int main(){
 
 											if(connect(conn->remote_server_fd, (struct sockaddr*)&remote_server->address, sizeof(remote_server->address)) < 0){
 												if(errno != EINPROGRESS) {
-													remove_connection(conn_manager, i);
+													int idx = find_idx_by_fd(conn_manager, fd);
+													if(idx < 0) break;
+													remove_connection(conn_manager, idx);
 													free(remote_server);
 													break;
 												}
@@ -196,7 +199,9 @@ int main(){
 												if	(errno != EINPROGRESS) {
 													char *msg = "Connection removed\n";
 													write(1, msg, 19);
-													remove_connection(conn_manager, i);
+													int idx = find_idx_by_fd(conn_manager, fd);
+													if(idx < 0) break;
+													remove_connection(conn_manager, idx);
 													break;
 												}
 												set_nonblocking(conn->remote_server_fd);
@@ -213,7 +218,9 @@ int main(){
 										} else {
 											char *msg = "Connection removed\n";
 											write(1, msg, 19);
-											remove_connection(conn_manager, i);
+											int idx = find_idx_by_fd(conn_manager, fd);
+											if(idx < 0) break;
+											remove_connection(conn_manager, idx);
 										}
 									}
 								}
