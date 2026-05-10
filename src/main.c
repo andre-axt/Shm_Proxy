@@ -96,7 +96,13 @@ int main(){
 					conn->remote_server_fd = socket(AF_INET, SOCK_STREAM, 0);
 			        if(conn->remote_server_fd < 0) {
 						int idx = find_idx_by_fd(conn_manager, conn->remote_server_fd);
-			            remove_connection(conn_manager, idx);
+						if(sent == -1){
+							int idx = find_idx_by_fd(conn_manager, conn->client_fd);
+							if(idx == -1) break;
+							remove_connection(conn_manager, idx);
+							break;	
+						} 
+						remove_connection(conn_manager, idx);
 			            continue;
 			        }
 				}
@@ -135,7 +141,12 @@ int main(){
 											if(connect(conn->remote_server_fd, (struct sockaddr*)&remote_server->address, sizeof(remote_server->address)) < 0){
 												if(errno != EINPROGRESS) {
 													int idx = find_idx_by_fd(conn_manager, fd);
-													if(idx < 0) break;
+													if(sent == -1){
+														int idx = find_idx_by_fd(conn_manager, conn->client_fd);
+														if(idx == -1) break;
+														remove_connection(conn_manager, idx);
+														break;	
+													} 
 													remove_connection(conn_manager, idx);
 													free(remote_server);
 													break;
@@ -148,7 +159,7 @@ int main(){
 											ev.data.ptr = conn;
 											epoll_ctl(epfd, EPOLL_CTL_ADD, conn->remote_server_fd, &ev);
 
-											send_buffer(conn, conn->remote_server_fd);
+											conn->remote_server_fd = remote_server->socket_fd;
 										}
 									}
 								}
@@ -163,70 +174,39 @@ int main(){
 					}
 				}
 
+				else if(fd == conn->remote_server_fd && (events[i].events & EPOLLOUT)) {
+					if(conn->state == 2) {
+						conn->state = 3;
+
+						if(conn->req > 0) {
+							int8_t sent = send_buffer(conn, conn->remote_server_fd);
+							while(sent == 1){
+								sent = send_buffer(conn, conn->remote_server_fd);
+							}
+						}
+
+						struct epoll_event ev;
+						ev.events = EPOLLIN | EPOLLET;
+						ev.data.ptr = conn;
+						epoll_ctl(epfd, EPOLL_CTL_MOD, conn->remote_server_fd, &ev);
+					}
+				}
+					
 				else if(fd == conn->remote_server_fd && (events[i].events & EPOLLIN)) {
 					if(read_socket(conn, 2) == 0){
 					
 						if(conn->buffer){
 							
-							switch(read_buffer(conn)) {
-								case -1: {
-									char *msg = "Error - read buffer failed\n";
-									write(1, msg, 36);
-								}
-									break;
-								case 1:
-									break;
-									
-								case 2: {
-									const char* host = get_header(conn->req->headers, conn->req->header_count, "Host:");
-									if(host){
-										char *ip = get_ip_from_host(host);
-										if(ip) {
-											conn->remote_server_fd = socket(AF_INET, SOCK_STREAM, 0);
-
-											if(conn->remote_server_fd < 0) {
-												break;
-											}
-
-											struct sockaddr_in remote_addr;
-											remote_addr.sin_family = AF_INET;
-											remote_addr.sin_port = htons(80);
-											if (inet_pton(remote_addr.sin_family, ip, &remote_addr.sin_addr) <= 0) {
-												break;
-											}
-											
-											if (connect(conn->remote_server_fd, (struct sockaddr*)&remote_addr, sizeof(remote_addr)) < 0){
-												if	(errno != EINPROGRESS) {
-													char *msg = "Connection removed\n";
-													write(1, msg, 19);
-													int idx = find_idx_by_fd(conn_manager, fd);
-													if(idx < 0) break;
-													remove_connection(conn_manager, idx);
-													break;
-												}
-												set_nonblocking(conn->remote_server_fd);
-	
-												struct epoll_event ev;
-												ev.events = EPOLLIN | EPOLLOUT | EPOLLET;
-												ev.data.ptr = conn;
-	
-												epoll_ctl(epfd, EPOLL_CTL_ADD, conn->remote_server_fd, &ev);
-												send_buffer(conn, conn->remote_server_fd);
-												free(ip);
-												
-											}
-										} else {
-											char *msg = "Connection removed\n";
-											write(1, msg, 19);
-											int idx = find_idx_by_fd(conn_manager, fd);
-											if(idx < 0) break;
-											remove_connection(conn_manager, idx);
-										}
-									}
-								}
-									break;
-								default:
-									break;
+							read_buffer(conn);
+							int8_t sent = send_buffer(conn, conn->client_fd);
+							if(sent == -1){
+								int idx = find_idx_by_fd(conn_manager, conn->client_fd);
+								if(idx < 0) break;
+								remove_connection(conn_manager, idx);
+								break;	
+							} 
+							while(sent == 1){
+								send_buffer(conn, conn->client_fd);
 							}
 						}
 					}
