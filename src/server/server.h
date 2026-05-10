@@ -27,7 +27,7 @@ typedef struct {
 	int	remote_server_fd; 
 	char	*buffer;
 	size_t 	buffer_len;
-	int	state;
+	int8_t	state; // 1 = STATE_WAITING_HOST, 2 = STATE_CONNECTING, 3 = STATE_CONNECTED, 4 = STATE_CLOSED
 	http_response_t *res;
 	http_request_t *req;
 } Connection_t;
