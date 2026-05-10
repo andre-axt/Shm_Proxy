@@ -121,7 +121,7 @@ int main(){
 							switch(read_buffer(conn)) {
 								case -1: {
 									char *msg = "Error - read buffer failed\n";
-									write(1, msg, 36);
+									write(1, msg, 28);
 								}
 									break;
 								case 1: {
@@ -168,7 +168,7 @@ int main(){
 					if(conn->state == 2) {
 						conn->state = 3;
 
-						if(conn->req > 0) {
+						if(conn->req != NULL) {
 							int8_t sent = send_buffer(conn, conn->remote_server_fd);
 							while(sent == 1){
 								sent = send_buffer(conn, conn->remote_server_fd);
