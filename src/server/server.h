@@ -48,6 +48,7 @@ ConnectionManager_t* init_connection_manager(uint8_t max_conn, int epoll_fd);
 void free_connection_manager(ConnectionManager_t* conn_manager);
 Connection_t* add_client_connection(ConnectionManager_t *manager, int client_fd);
 Connection_t* find_connection_by_fd(ConnectionManager_t *manager, int fd);
+int find_idx_by_fd(ConnectionManager_t *manager, int fd);
 int8_t send_buffer(Connection_t *conn, int fd);
 void remove_connection(ConnectionManager_t *manager, int index);
 int8_t read_socket(Connection_t *conn, int8_t handler); // Set the handler to 1 to read the client socket and 2 to read the remote server socket, more features coming soon. :)
