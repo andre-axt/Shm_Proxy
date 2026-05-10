@@ -87,12 +87,17 @@ int main(){
 
 				if(client_fd > 0) {
 					set_nonblocking(client_fd);
-					int8_t idx = add_client_connection(conn_manager, client_fd);
-					if(idx == -1) {
+					Connection_t *conn = add_client_connection(conn_manager, client_fd);
+					if(conn == NULL) {
 						char *msg = "Error - add client to epoll failed\n";
 						write(1, msg, 35);
 						close(client_fd);
 					}
+					conn->remote_server_fd = socket(AF_INET, SOCK_STREAM, 0);
+			        if(conn->remote_server_fd < 0) {
+			            remove_connection(conn_manager, conn->id);
+			            continue;
+			        }
 				}
 
 			}
