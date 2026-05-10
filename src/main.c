@@ -123,25 +123,30 @@ int main(){
 								}
 									break;
 								case 1: {
-									int result = send_buffer(conn, fd);
-									if(result == 0){
-										if("keep-alive" == get_header(conn->req->headers, conn->req->header_count, "Connection:")){
-											conn->state = 0;
-											conn->buffer_len = 0;
-										} else {
-											char *msg = "Connection removed\n";
-											write(1, msg, 19);
-											remove_connection(conn_manager, i);
+									const char* host = get_header(conn->req->headers, conn->req->header_count, "Host:");
+									if(host){
+										char *ip = get_ip_from_host(host);
+										if(ip) {
+											Socket_t *remote_server = malloc(sizeof(Socket_t));
+											remote_server->address.sin_addr.s_addr = inet_addr(ip);
+											remote_server->address.sin_port = htons(80);
+
+											if(connect(conn->remote_server_fd, (struct sockaddr*)&remote_server->address, sizeof(remote_server->address)) < 0){
+												if(errno != EINPROGRESS) {
+													remove_connection(conn_manager, i);
+													free(remote_server);
+													break;
+												}
+												conn->state = 2; 
+											}
+
+											struct epoll_event ev;
+											ev.events = EPOLLIN | EPOLLOUT | EPOLLET;
+											ev.data.ptr = conn;
+											epoll_ctl(epfd, EPOLL_CTL_ADD, conn->remote_server_fd, &ev);
+
+											send_buffer(conn, conn->remote_server_fd);
 										}
-									} else if(result == 1) {
-										struct epoll_event ev;
-										ev.events = EPOLLIN | EPOLLOUT | EPOLLET;
-										ev.data.ptr = conn;
-										epoll_ctl(epfd, EPOLL_CTL_MOD, conn->client_fd, &ev);
-									} else {
-										char *msg = "Connection removed\n";
-										write(1, msg, 19);
-										remove_connection(conn_manager, i);
 									}
 								}
 									break;
