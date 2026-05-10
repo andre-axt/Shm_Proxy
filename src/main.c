@@ -39,16 +39,16 @@ int main(){
 	switch(create_server(server)){
 		case -1: {
 			free(server);
-			char *msg = "Error - socket create failed";
-			write(1, msg, 28);
+			char *msg = "Error - socket create failed\n";
+			write(1, msg, 29);
 			return 1;
 		}
 			break;
 		case 1: {
 			free(server);
 			close(server->socket_fd);
-			char *msg = "Error - bind socket failed";
-			write(1, msg, 26);
+			char *msg = "Error - bind socket failed\n";
+			write(1, msg, 27);
 			return 1;
 		}
 			break;
@@ -56,8 +56,8 @@ int main(){
 	if(set_nonblocking(server->socket_fd)){
 		close(server->socket_fd);
 		free(server);
-		char *msg = "Error - set nonblocking failed";
-		write(1, msg, 30);
+		char *msg = "Error - set nonblocking failed\n";
+		write(1, msg, 31);
 		return 1;
 	
 	}
@@ -66,8 +66,8 @@ int main(){
 	if(start_listen(server)){
 		close(server->socket_fd);
 		free(server);
-		char *msg = "Error - listen socket failed";
-		write(1, msg, 28);
+		char *msg = "Error - listen socket failed\n";
+		write(1, msg, 29);
 		return 1;
 	}
 	ev.events = EPOLLIN;
@@ -89,8 +89,8 @@ int main(){
 					set_nonblocking(client_fd);
 					int8_t idx = add_client_connection(conn_manager, client_fd);
 					if(idx == -1) {
-						char *msg = "Error - add client to epoll failed";
-						write(1, msg, 34);
+						char *msg = "Error - add client to epoll failed\n";
+						write(1, msg, 35);
 						close(client_fd);
 					}
 				}
@@ -101,8 +101,8 @@ int main(){
 				Connection_t *conn = find_connection_by_fd(conn_manager, fd);
 
 				if(conn == NULL){
-					char *msg = "Error - find connection by fd failed";
-					write(1, msg, 35);
+					char *msg = "Error - find connection by fd failed\n";
+					write(1, msg, 36);
 					continue;	
 				} 
 
@@ -113,8 +113,8 @@ int main(){
 							
 							switch(read_buffer(conn)) {
 								case -1: {
-									char *msg = "Error - read buffer failed";
-									write(1, msg, 35);
+									char *msg = "Error - read buffer failed\n";
+									write(1, msg, 36);
 								}
 									break;
 								case 1: {
@@ -124,8 +124,8 @@ int main(){
 											conn->state = 0;
 											conn->buffer_len = 0;
 										} else {
-											char *msg = "Connection removed";
-											write(1, msg, 18);
+											char *msg = "Connection removed\n";
+											write(1, msg, 19);
 											remove_connection(conn_manager, i);
 										}
 									} else if(result == 1) {
@@ -134,8 +134,8 @@ int main(){
 										ev.data.ptr = conn;
 										epoll_ctl(epfd, EPOLL_CTL_MOD, conn->client_fd, &ev);
 									} else {
-										char *msg = "Connection removed";
-										write(1, msg, 18);
+										char *msg = "Connection removed\n";
+										write(1, msg, 19);
 										remove_connection(conn_manager, i);
 									}
 								}
@@ -157,8 +157,8 @@ int main(){
 							
 							switch(read_buffer(conn)) {
 								case -1: {
-									char *msg = "Error - read buffer failed";
-									write(1, msg, 35);
+									char *msg = "Error - read buffer failed\n";
+									write(1, msg, 36);
 								}
 									break;
 								case 1:
@@ -184,8 +184,8 @@ int main(){
 											
 											if (connect(conn->remote_server_fd, (struct sockaddr*)&remote_addr, sizeof(remote_addr)) < 0){
 												if	(errno != EINPROGRESS) {
-													char *msg = "Connection removed";
-													write(1, msg, 18);
+													char *msg = "Connection removed\n";
+													write(1, msg, 19);
 													remove_connection(conn_manager, i);
 													break;
 												}
@@ -201,8 +201,8 @@ int main(){
 												
 											}
 										} else {
-											char *msg = "Connection removed";
-											write(1, msg, 18);
+											char *msg = "Connection removed\n";
+											write(1, msg, 19);
 											remove_connection(conn_manager, i);
 										}
 									}
