@@ -109,35 +109,41 @@ char *get_header(char **headers, int header_count, const char *name) {
 }
 
 char *parse_chunked_body(char *chunked_data, size_t *body_length) {
-        char *result = malloc(1);
+        char *result = NULL;
         int total_size = 0;
         char *ptr = chunked_data;
-
+        
         while (*ptr) {
                 char *end = strstr(ptr, "\r\n");
                 if (!end) break;
-
-                int chunk_size = strtol(ptr, NULL, 16);
+                
+                int chunk_size = (int)strtol(ptr, NULL, 16);
                 if (chunk_size == 0) break;
-
-                ptr = end + 2;
-                result = realloc(result, total_size + chunk_size + 1);
+                
+                ptr = end + 2;  
+                
+                char *new_result = realloc(result, total_size + chunk_size + 1);
+                if (!new_result) {
+                    free(result);
+                    return NULL;
+                }
+                result = new_result;
+                
                 memcpy(result + total_size, ptr, chunk_size);
                 total_size += chunk_size;
-
                 ptr += chunk_size;
-                if (*ptr == '\r' && *(ptr+1) == '\n') {
-                        ptr += 2;
-                }
                 
+                if (*ptr == '\r' && *(ptr + 1) == '\n') {
+                    ptr += 2;
+                }
+        }
+                
+        if (result) {
+                result[total_size] = '\0';
+                *body_length = total_size;
         }
         
-        result[total_size] = '\0';
-        char final_result[total_size];
-        strcpy(final_result, result);
-        *body_length = total_size;
-        free(result);
-        return final_result;
+        return result; 
 }
 
 http_request_t* request_parser(http_request_t *request, char *buffer){
