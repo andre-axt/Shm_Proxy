@@ -158,7 +158,7 @@ ConnectionManager_t* init_connection_manager(uint8_t max_conn, int epoll_fd) {
 		manager->conn[i].client_fd = -1;
 		manager->conn[i].remote_server_fd = -1;
 		manager->conn[i].buffer = malloc(BUFFER_SIZE);
-		manager->conn[i].buffer_len = 0;
+		manager->conn[i].buffer_len = BUFFER_SIZE;
 		manager->conn[i].state = 0;
 		manager->conn[i].res = malloc(sizeof(http_response_t));
 		manager->conn[i].req = malloc(sizeof(http_request_t));
