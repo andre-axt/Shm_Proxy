@@ -52,7 +52,7 @@ int8_t start_listen(Socket_t * sckt){
 
 int8_t read_socket(Connection_t *conn, int8_t handler){
 	size_t total_read = 0;
-	size_t bytes_read;
+	ssize_t bytes_read;
 	if(handler > 2 || handler < 1){
 		char *msg = "Error - handler must be 1 or 2\n";
 		write(1, msg, 32);
@@ -61,6 +61,8 @@ int8_t read_socket(Connection_t *conn, int8_t handler){
 	while(1) {
 		if (total_read + 4096 > conn->buffer_cap){
 			size_t new_size = conn->buffer_cap * 2;
+			if(new_size == 0) new_size = BUFFER_SIZE;
+			
 			char *new_buffer = realloc(conn->buffer, new_size);
 			if(!new_buffer){
 				char *msg = "Error - realloc\n";
@@ -70,26 +72,36 @@ int8_t read_socket(Connection_t *conn, int8_t handler){
 
 			conn->buffer = new_buffer;
 			conn->buffer_cap = new_size;
-			char msg[50];
-
-			int8_t msg_size = snprintf(msg, sizeof(msg), "New Buffer Size: %zu\n", new_size);
-			write(1, msg, msg_size);
-			printf("New Buffer Size - %zu\n", new_size);
-		}
-		if(handler == 1) {
-			bytes_read = recv(conn->client_fd, conn->buffer + total_read, conn->buffer_len - total_read, 0);
-			if(bytes_read <= 0){
-				break;
-			}
-			total_read += bytes_read;
-		}else if(handler == 2){
-			bytes_read = recv(conn->remote_server_fd, conn->buffer + total_read, conn->buffer_len - total_read, 0);
-			if(bytes_read <= 0){
-				break;
-			}
-			total_read += bytes_read;
 		}
 		
+		if(handler == 1) {
+			bytes_read = recv(conn->client_fd, conn->buffer + total_read, conn->buffer_cap - total_read, 0);
+			
+		} 
+		else {
+			bytes_read = recv(conn->remote_server_fd, conn->buffer + total_read, conn->buffer_cap - total_read, 0);
+			
+		}
+		if (bytes_read > 0){
+			total_read += bytes_read;
+			continue;
+		} else if (bytes_read == 0) {
+			break;
+		}
+		else {
+			if(errno == EAGAIN || errno == EWOULDBLOCK) {
+				break;
+			}
+
+			return -1;
+		}
+		
+	}
+
+	conn->buffer_len = total_read;
+
+	if(total_read < conn->buffer_cap) {
+		conn->buffer[total_read] = '\0';
 	}
 	return 0;
 
