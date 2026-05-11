@@ -15,7 +15,7 @@
 typedef struct {
 	int	socket_fd;
 	struct 	sockaddr_in address;
-	int 	port;
+	int port;
 	int	backlog;
 	int	domain;
 	int	type;
@@ -27,6 +27,7 @@ typedef struct {
 	int	remote_server_fd; 
 	char	*buffer;
 	size_t 	buffer_len;
+	size_t	buffer_cap; // Total allocated size
 	int8_t	state; // 1 = STATE_WAITING_HOST, 2 = STATE_CONNECTING, 3 = STATE_CONNECTED, 4 = STATE_CLOSED
 	http_response_t *res;
 	http_request_t *req;
