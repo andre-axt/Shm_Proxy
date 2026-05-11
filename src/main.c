@@ -2,7 +2,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <signal.h>
-#include <stdlib.h>
+#include <stdio.h>
 
 #define MAX_CONNECTIONS 100
 
