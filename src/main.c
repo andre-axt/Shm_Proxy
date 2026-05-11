@@ -2,6 +2,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <signal.h>
+#include <stdlib.h>
 
 #define MAX_CONNECTIONS 100
 
@@ -117,7 +118,10 @@ int main(){
 					if(read_socket(conn, 1) == 0){
 					
 						if(conn->buffer){
-							
+							printf("Buffer length: %zu\n", conn->buffer_len);
+				            printf("Buffer content (first 100 chars):\n%.*s\n", (int)(conn->buffer_len > 100 ? 100 : conn->buffer_len), conn->buffer);
+				            int result = read_buffer(conn);
+				            printf("read_buffer returned: %d\n", result);
 							switch(read_buffer(conn)) {
 								case -1: {
 									char *msg = "Error - read buffer failed\n";
