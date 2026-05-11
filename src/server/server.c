@@ -82,7 +82,7 @@ int8_t read_socket(Connection_t *conn, int8_t handler){
 				break;
 			}
 			total_read += bytes_read;
-		}else {
+		}else if(handler == 2){
 			bytes_read = recv(conn->remote_server_fd, conn->buffer + total_read, conn->buffer_len - total_read, 0);
 			if(bytes_read <= 0){
 				break;
