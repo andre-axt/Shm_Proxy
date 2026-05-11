@@ -59,8 +59,8 @@ int8_t read_socket(Connection_t *conn, int8_t handler){
 		return -1;
 	}
 	while(1) {
-		if (total_read + 4096 > conn->buffer_len){
-			size_t new_size = conn->buffer_len *2;
+		if (total_read + 4096 > conn->buffer_cap){
+			size_t new_size = conn->buffer_cap * 2;
 			char *new_buffer = realloc(conn->buffer, new_size);
 			if(!new_buffer){
 				char *msg = "Error - realloc\n";
@@ -69,7 +69,7 @@ int8_t read_socket(Connection_t *conn, int8_t handler){
 			} 
 
 			conn->buffer = new_buffer;
-			conn->buffer_len = new_size;
+			conn->buffer_cap = new_size;
 			char msg[50];
 
 			int8_t msg_size = snprintf(msg, sizeof(msg), "New Buffer Size: %zu\n", new_size);
@@ -158,7 +158,8 @@ ConnectionManager_t* init_connection_manager(uint8_t max_conn, int epoll_fd) {
 		manager->conn[i].client_fd = -1;
 		manager->conn[i].remote_server_fd = -1;
 		manager->conn[i].buffer = malloc(BUFFER_SIZE);
-		manager->conn[i].buffer_len = BUFFER_SIZE;
+		manager->conn[i].buffer_len = 0;
+		manager->conn[i].buffer_cap = BUFFER_SIZE;
 		manager->conn[i].state = 0;
 		manager->conn[i].res = malloc(sizeof(http_response_t));
 		manager->conn[i].req = malloc(sizeof(http_request_t));
