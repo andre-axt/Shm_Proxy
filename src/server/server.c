@@ -108,7 +108,7 @@ int8_t read_socket(Connection_t *conn, int8_t handler){
 }
 
 int8_t read_buffer(Connection_t *conn) {
-    const char *methods[] = {"GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"};
+    const char *methods[] = {"GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS", "CONNECT"};
     int8_t num_methods = sizeof(methods) / sizeof(methods[0]);
 	
     if (strncmp(conn->buffer, "HTTP", 4) == 0) {
