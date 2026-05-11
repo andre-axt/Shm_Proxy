@@ -146,7 +146,7 @@ int main(){
 
 											struct epoll_event ev;
 											ev.events = EPOLLIN | EPOLLOUT | EPOLLET;
-											ev.data.ptr = conn;
+											ev.data.fd = conn->remote_server_fd;
 											epoll_ctl(epfd, EPOLL_CTL_ADD, conn->remote_server_fd, &ev);
 
 											conn->remote_server_fd = remote_server->socket_fd;
@@ -177,7 +177,7 @@ int main(){
 
 						struct epoll_event ev;
 						ev.events = EPOLLIN | EPOLLET;
-						ev.data.ptr = conn;
+						ev.data.fd = conn->remote_server_fd;
 						epoll_ctl(epfd, EPOLL_CTL_MOD, conn->remote_server_fd, &ev);
 					}
 				}
