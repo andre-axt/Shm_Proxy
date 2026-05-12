@@ -165,7 +165,30 @@ http_request_t* request_parser(http_request_t *request, char *buffer){
                 request->method = strdup(method);
                 request->version = strdup(version);
 
-                parse_query_string(full_path, &request->query_string, &request->path);
+                if(strcmp(method, "CONNECT") == 0){
+                        request->path = strdup(full_path);
+                        request->query_string = NULL;
+                } else {
+                        char *host_start = strstr(full_path, "://");
+                        if(host_start) {
+                                char *path_start = strchr(host_start + 3, '/');
+                                if(path_start) {
+                                        int host_len = path_start - (host_start + 3);
+                                        char *host = strndup(host_start + 3, host_len);
+                                        if(host) {
+                                                free(host);
+                                        }
+                                        parse_query_string(path_start, &request->query_string, &request->path);
+                                }
+                                else {
+                                        request->path = strdup("/");
+                                        request->query_string = NULL;
+                                }
+                        }
+                        else {
+                                parse_query_string(full_path, &request->query_string, &request->path);
+                        }
+                }
         }
         
         char *headers_start = strstr(buffer, "\r\n");
