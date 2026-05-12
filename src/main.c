@@ -262,29 +262,16 @@ int main(){
                 else if(fd == conn->remote_server_fd && (events[i].events & EPOLLIN)) {
                     if(read_socket(conn, 2) == 0){
                         if(conn->buffer && conn->buffer_len > 0){
-                            if(conn->req && conn->req->method && 
-                               strcmp(conn->req->method, "CONNECT") == 0) {
-                                int8_t sent = send_buffer(conn, conn->client_fd);
-                                if(sent == -1){
-                                    int idx = find_idx_by_fd(conn_manager, conn->client_fd);
-                                    if(idx != -1) remove_connection(conn_manager, idx);
-                                    continue;
-                                }
-                                while(sent == 1){
-                                    sent = send_buffer(conn, conn->client_fd);
-                                }
-                            } else {
-                                read_buffer(conn); 
-                                int8_t sent = send_buffer(conn, conn->client_fd);
-                                if(sent == -1){
-                                    int idx = find_idx_by_fd(conn_manager, conn->client_fd);
-                                    if(idx != -1) remove_connection(conn_manager, idx);
-                                    continue;
-                                }
-                                while(sent == 1){
-                                    sent = send_buffer(conn, conn->client_fd);
-                                }
-                            }
+
+							int8_t sent = send_buffer(conn, conn->client_fd);
+							if(sent == -1){
+								int idx = find_idx_by_fd(conn_manager, conn->client_fd);
+								if(idx != -1) remove_connection(conn_manager, idx);
+								continue;
+							}
+							while(sent == 1){
+								sent = send_buffer(conn, conn->client_fd);
+							}
                         }
                     }
                 }
