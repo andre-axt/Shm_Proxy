@@ -217,69 +217,94 @@ http_request_t* request_parser(http_request_t *request, char *buffer){
 }
 
 http_response_t* response_parser(http_response_t* response, char *buffer){
-        char *buffer_aux = strdup(buffer);
-        char *line = strtok(buffer_aux, "\r\n");
-
-        if(!line){
-                free(buffer_aux);
-                char *msg = "Error - response parser failed";
-                write(1, msg, 30);
-                return response;      
-        } 
-
-        char *version = strtok(line, " "); 
-        char *status = strtok(NULL, " "); 
-        char *reason_phrase = strtok(NULL, " "); 
-
-        if (version && status && reason_phrase){
-                response->version = strdup(version);
-                response->status_code = atoi(status);
-                if(reason_phrase) {
-                        response->reason_phrase = strdup(trim(reason_phrase));
-                        
-                }
-        }
-
-        char *headers_start = strstr(buffer, "\r\n");
-        if (headers_start) {
-                headers_start += 2;
-                char *headers_end = strstr(headers_start, "\r\n\r\n");
-                if (headers_end) {
-                        int headers_len = headers_end - headers_start;
-                        char *headers_buffer = strndup(headers_start, headers_len);
-                        if(headers_buffer) {
-                                parse_headers(headers_buffer, &response->headers, &response->header_count);
-                                free(headers_buffer);
-                                
-                        }
-
-                        char *body_start = headers_end + 4;
-                        long content_length = 0;
-
-                        char *cl_header = get_header(response->headers, response->header_count, "Content-Length");
-                        if(cl_header) {
-                                content_length = atol(cl_header);
-                        }
-
-                        int is_chunked = 0;
-                        char *te_header = get_header(response->headers, response->header_count, "Transfer-Encoding");
-                        if(te_header && strstr(te_header, "chunked")) {
-                                is_chunked += 1;
-                        }
-                        
-                        if (is_chunked) {
-                                response->body = parse_chunked_body(body_start, &response->body_length);
-                        }
-                        else if (content_length > 0){
-                                size_t remaining = strlen(body_start);
-                                if (remaining >= (size_t)content_length) {
-                                        response->body = strndup(body_start, content_length);
-                                        response->body_length = content_length;
-                                }
-                        }
-                }
-        }
-        
+    if(!buffer || !response) return response;
+    
+    char *buffer_aux = strdup(buffer);
+    if(!buffer_aux) return response;
+    
+    char *line_end = strstr(buffer_aux, "\r\n");
+    if(!line_end) {
         free(buffer_aux);
         return response;
+    }
+    
+    int line_len = line_end - buffer_aux;
+    char *status_line = strndup(buffer_aux, line_len);
+    if(!status_line) {
+        free(buffer_aux);
+        return response;
+    }
+    
+    char *version = status_line;
+    char *space1 = strchr(version, ' ');
+    if(space1) {
+        *space1 = '\0';
+        response->version = strdup(version);
+        
+        char *status = space1 + 1;
+        char *space2 = strchr(status, ' ');
+        if(space2) {
+            *space2 = '\0';
+            response->status_code = atoi(status);
+            
+            char *reason = space2 + 1;
+            response->reason_phrase = strdup(reason);
+        } else {
+            response->status_code = atoi(status);
+            response->reason_phrase = strdup("");
+        }
+    } else {
+        response->version = strdup(version);
+        response->status_code = 0;
+        response->reason_phrase = strdup("");
+    }
+    
+    free(status_line);
+    
+    char *headers_start = strstr(buffer, "\r\n");
+    if(headers_start) {
+        headers_start += 2;
+        char *headers_end = strstr(headers_start, "\r\n\r\n");
+        if(headers_end) {
+            int headers_len = headers_end - headers_start;
+            char *headers_buffer = strndup(headers_start, headers_len);
+            if(headers_buffer) {
+                parse_headers(headers_buffer, &response->headers, &response->header_count);
+                free(headers_buffer);
+            }
+            
+            char *body_start = headers_end + 4;
+            size_t body_remaining = strlen(body_start);
+            
+            if(body_remaining > 0) {
+                char *te_header = get_header(response->headers, response->header_count, "Transfer-Encoding");
+                if(te_header && strcasestr(te_header, "chunked")) {
+                    response->body = parse_chunked_body(body_start, &response->body_length);
+                } 
+                else {
+                    char *cl_header = get_header(response->headers, response->header_count, "Content-Length");
+                    if(cl_header) {
+                        long content_length = atol(cl_header);
+                        if(content_length > 0 && body_remaining >= (size_t)content_length) {
+                            response->body = strndup(body_start, content_length);
+                            response->body_length = content_length;
+                        }
+                    }
+                    else if(te_header == NULL && cl_header == NULL) {
+                        response->body = NULL;
+                        response->body_length = 0;
+                    }
+                    else {
+                        if(body_remaining > 0) {
+                            response->body = strndup(body_start, body_remaining);
+                            response->body_length = body_remaining;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    free(buffer_aux);
+    return response;
 }
