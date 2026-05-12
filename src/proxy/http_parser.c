@@ -235,7 +235,7 @@ http_response_t* response_parser(http_response_t* response, char *buffer){
                 response->version = strdup(version);
                 response->status_code = atoi(status);
                 if(reason_phrase) {
-                        response->reason_phrase = strdup(trim(reason_phrase);
+                        response->reason_phrase = strdup(trim(reason_phrase));
                         
                 }
         }
