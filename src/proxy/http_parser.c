@@ -103,8 +103,6 @@ char *get_header(char **headers, int header_count, const char *name) {
                         return trim(value);
                 }
         }
-        char *msg = "Error - get header returned NULL";
-        write(1, msg, 32);
         return NULL;
 }
 
@@ -236,8 +234,10 @@ http_response_t* response_parser(http_response_t* response, char *buffer){
         if (version && status && reason_phrase){
                 response->version = strdup(version);
                 response->status_code = atoi(status);
-                reason_phrase = trim(reason_phrase);
-                response->reason_phrase = strdup(reason_phrase);
+                if(reason_phrase) {
+                        response->reason_phrase = strdup(trim(reason_phrase);
+                        
+                }
         }
 
         char *headers_start = strstr(buffer, "\r\n");
@@ -247,35 +247,32 @@ http_response_t* response_parser(http_response_t* response, char *buffer){
                 if (headers_end) {
                         int headers_len = headers_end - headers_start;
                         char *headers_buffer = strndup(headers_start, headers_len);
-                        parse_headers(headers_buffer, &response->headers, &response->header_count);
-                        free(headers_buffer);
+                        if(headers_buffer) {
+                                parse_headers(headers_buffer, &response->headers, &response->header_count);
+                                free(headers_buffer);
+                                
+                        }
 
                         char *body_start = headers_end + 4;
-                        long unsigned int content_length = 0;
+                        long content_length = 0;
 
-                        for (int i = 0; i < response->header_count; i++) {
-                                if (strncasecmp(response->headers[i], "Content-Length:", 15) == 0) {
-                                        char *value = response->headers[i] + 15;
-                                        content_length = (long unsigned int)atoi(trim(value));
-                                        break;
-                                }
+                        char *cl_header = get_header(response->headers, response->header_count, "Content-Length");
+                        if(cl_header) {
+                                content_length = atol(cl_header);
                         }
 
                         int is_chunked = 0;
-                        for (int i = 0; i < response->header_count; i++) {
-                                if (strncasecmp(response->headers[i], "Transfer-Enconding:", 18) == 0) {
-                                        char *value = response->headers[i] + 18;
-                                        if (strstr(trim(value), "chunked")) {
-                                                is_chunked = 1;
-                                                break;
-                                        }
-                                }
+                        char *te_header = get_header(response->headers, response->header_count, "Transfer-Encoding");
+                        if(te_header && strstr(te_header, "chunked")) {
+                                is_chunked += 1;
                         }
+                        
                         if (is_chunked) {
                                 response->body = parse_chunked_body(body_start, &response->body_length);
                         }
                         else if (content_length > 0){
-                                if (strlen(body_start) >= content_length) {
+                                size_t remaining = strlen(body_start);
+                                if (remaining >= (size_t)content_length) {
                                         response->body = strndup(body_start, content_length);
                                         response->body_length = content_length;
                                 }
@@ -284,7 +281,5 @@ http_response_t* response_parser(http_response_t* response, char *buffer){
         }
         
         free(buffer_aux);
-        char *msg = "Success - response parser";
-        write(1, msg, 25);
         return response;
 }
