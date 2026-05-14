@@ -243,7 +243,7 @@ int find_idx_by_fd(ConnectionManager_t *manager, int fd) {
 }
 
 int8_t send_buffer(Connection_t *conn, int fd) {
-	if(fd == -1) return -1;
+	if(fd == -1 || conn->buffer_len == 0) return 0;
 
 	ssize_t sent = send(fd, conn->buffer, conn->buffer_len, 0);
 	if(sent < 0) {
@@ -252,7 +252,10 @@ int8_t send_buffer(Connection_t *conn, int fd) {
 		}
 		return -1;
 	}
-	if((size_t)sent < conn->buffer_len) {
+	else if(sent == 0){
+		return -1;
+	}
+	else if((size_t)sent < conn->buffer_len) {
 		memmove(conn->buffer, conn->buffer + sent, conn->buffer_len - sent);
 		conn->buffer_len -= sent;
 		return 1;
