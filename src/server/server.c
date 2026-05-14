@@ -51,7 +51,7 @@ int8_t start_listen(Socket_t * sckt){
 } 
 
 int8_t read_socket(Connection_t *conn, int8_t handler){
-	size_t total_read = 0;
+	size_t total_read = conn->buffer_len;
 	ssize_t bytes_read;
 	if(handler > 2 || handler < 1){
 		char *msg = "Error - handler must be 1 or 2\n";
