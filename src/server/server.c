@@ -173,8 +173,8 @@ ConnectionManager_t* init_connection_manager(uint8_t max_conn, int epoll_fd) {
 		manager->conn[i].buffer_len = 0;
 		manager->conn[i].buffer_cap = BUFFER_SIZE;
 		manager->conn[i].state = 0;
-		manager->conn[i].res = malloc(sizeof(http_response_t));
-		manager->conn[i].req = malloc(sizeof(http_request_t));
+		manager->conn[i].res = NULL;
+		manager->conn[i].req = NULL;
 	}
 
 	return manager;
