@@ -219,6 +219,8 @@ int main(){
                                     while(sent == 1){
                                         sent = send_buffer(conn, conn->client_fd);
                                     }
+									conn->buffer_len = 0;
+									memset(conn->buffer, '\0', sizeof(conn->buffer)); 
                                 }
                             }
                         }
@@ -250,6 +252,8 @@ int main(){
                                 while(sent == 1){
                                     sent = send_buffer(conn, conn->remote_server_fd);
                                 }
+								conn->buffer_len = 0;
+								memset(conn->buffer, '\0', sizeof(conn->buffer)); 
                             }
                             
                             struct epoll_event ev_mod;
@@ -272,6 +276,8 @@ int main(){
 							while(sent == 1){
 								sent = send_buffer(conn, conn->client_fd);
 							}
+							conn->buffer_len = 0;
+							memset(conn->buffer, '\0', sizeof(conn->buffer)); 
                         }
                     }
                 }
