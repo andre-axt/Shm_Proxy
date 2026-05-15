@@ -196,6 +196,8 @@ int main(){
                                                 }
                                                 conn->state = 2;
                                             } else {
+												char *msg = "Success - remote_server_fd connect\n";
+												write(1, msg, 35);
                                                 conn->state = 3;
                                             }
                                             
@@ -278,6 +280,8 @@ int main(){
 							}
 							conn->buffer_len = 0;
 							memset(conn->buffer, '\0', sizeof(conn->buffer_len)); 
+							char *msg = "Success - response was sent\n";
+							write(1, msg, 17);
                         }
                     }
                 }
