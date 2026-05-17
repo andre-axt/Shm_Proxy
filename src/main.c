@@ -281,7 +281,7 @@ int main(){
 							ev.data.fd = conn->client_fd; 
 							ev.events = EPOLLIN | EPOLLOUT; 
 							
-							epoll_ctl(epoll_fd, EPOLL_CTL_MOD, conn->client_fd, &ev);							
+							epoll_ctl(epfd, EPOLL_CTL_MOD, conn->client_fd, &ev);							
                         }
                     }
                 }
