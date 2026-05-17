@@ -114,7 +114,7 @@ int8_t read_buffer(Connection_t *conn) {
     if (strncmp(conn->buffer, "HTTP", 4) == 0) {
         conn->res = init_http_response();
         conn->res = response_parser(conn->res, conn->buffer);
-        return 1;
+        return 0;
     }
 
     for (int i = 0; i < num_methods; i++) {
@@ -123,12 +123,12 @@ int8_t read_buffer(Connection_t *conn) {
 			if (conn->buffer[len] == ' ' || conn->buffer[len] == '\0') {
 	            conn->req = init_http_request();
 	            conn->req = request_parser(conn->req, conn->buffer);
-				return 2; 
+				return 0; 
 		    }
         }
     }
 
-    return -1; 
+    return 1; 
 }
 
 char* get_ip_from_host(const char* hostname){
