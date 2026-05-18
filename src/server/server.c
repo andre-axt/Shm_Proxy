@@ -51,59 +51,99 @@ int8_t start_listen(Socket_t * sckt){
 } 
 
 int8_t read_socket(Connection_t *conn, int8_t handler){
-	size_t total_read = conn->buffer_len;
 	ssize_t bytes_read;
 	if(handler > 2 || handler < 1){
 		char *msg = "Error - handler must be 1 or 2\n";
 		write(1, msg, 32);
 		return -1;
 	}
-	while(1) {
-		if (total_read + 4096 > conn->buffer_cap){
-			size_t new_size = conn->buffer_cap * 2;
-			if(new_size == 0) new_size = BUFFER_SIZE;
+	if(handler == 1){
+		size_t total_read = conn->client_buffer_len;
+		while(1) {
+			if (total_read + 4096 > conn->client_buffer_cap){
+				size_t new_size = conn->client_buffer_cap * 2;
+				if(new_size == 0) new_size = BUFFER_SIZE;
+				
+				char *new_buffer = realloc(conn->client_buffer, new_size);
+				if(!new_buffer){
+					char *msg = "Error - realloc\n";
+					write(1, msg, 17); 
+					return -1;
+				} 
+	
+				conn->client_buffer = new_buffer;
+				conn->client_buffer_cap = new_size;
+			}
 			
-			char *new_buffer = realloc(conn->buffer, new_size);
-			if(!new_buffer){
-				char *msg = "Error - realloc\n";
-				write(1, msg, 17); 
-				return -1;
-			} 
-
-			conn->buffer = new_buffer;
-			conn->buffer_cap = new_size;
-		}
-		
-		if(handler == 1) {
-			bytes_read = recv(conn->client_fd, conn->buffer + total_read, conn->buffer_cap - total_read, 0);
-			
-		} 
-		else {
-			bytes_read = recv(conn->remote_server_fd, conn->buffer + total_read, conn->buffer_cap - total_read, 0);
-			
-		}
-		if (bytes_read > 0){
-			total_read += bytes_read;
-			continue;
-		} else if (bytes_read == 0) {
-			break;
-		}
-		else {
-			if(errno == EAGAIN || errno == EWOULDBLOCK) {
+			bytes_read = recv(conn->client_fd, conn->client_buffer + total_read, conn->client_buffer_cap - total_read, 0);
+				
+			if (bytes_read > 0){
+				total_read += bytes_read;
+				continue;
+			} else if (bytes_read == 0) {
 				break;
 			}
-
-			return -1;
+			else {
+				if(errno == EAGAIN || errno == EWOULDBLOCK) {
+					break;
+				}
+	
+				return -1;
+			}
+			
 		}
-		
+	
+		conn->client_buffer_len = total_read;
+	
+		if(total_read < conn->client_buffer_cap) {
+			conn->client_buffer[total_read] = '\0';
+		}
+		return 0;
 	}
-
-	conn->buffer_len = total_read;
-
-	if(total_read < conn->buffer_cap) {
-		conn->buffer[total_read] = '\0';
+	if(handler == 2){
+		size_t total_read = conn->remote_server_buffer_len;
+		while(1) {
+			if (total_read + 4096 > conn->remote_server_buffer_cap){
+				size_t new_size = conn->remote_server_buffer_cap * 2;
+				if(new_size == 0) new_size = BUFFER_SIZE;
+				
+				char *new_buffer = realloc(conn->remote_server_buffer, new_size);
+				if(!new_buffer){
+					char *msg = "Error - realloc\n";
+					write(1, msg, 17); 
+					return -1;
+				} 
+	
+				conn->remote_server_buffer = new_buffer;
+				conn->remote_server_buffer_cap = new_size;
+			}
+			
+			bytes_read = recv(conn->remote_server_fd, conn->remote_server_buffer + total_read, conn->remote_server_buffer_cap - total_read, 0);
+				
+			if (bytes_read > 0){
+				total_read += bytes_read;
+				continue;
+			} else if (bytes_read == 0) {
+				break;
+			}
+			else {
+				if(errno == EAGAIN || errno == EWOULDBLOCK) {
+					break;
+				}
+	
+				return -1;
+			}
+			
+		}
+	
+		conn->remote_server_buffer_len = total_read;
+	
+		if(total_read < conn->remote_server_buffer_cap) {
+			conn->remote_server_buffer[total_read] = '\0';
+		}
+		return 0;
 	}
-	return 0;
+	
 
 }
 
@@ -193,17 +233,17 @@ void free_connection_manager(ConnectionManager_t* conn_manager){
 	if (!conn_manager) return;
 
 	for (int i = 0; i < conn_manager->act_conn; i++){
-		if (conn_manager->conn[i].buffer) {
-			free(conn_manager->conn[i].buffer);
-		
+		if (conn_manager->conn[i].client_buffer) {
+			free(conn_manager->conn[i].client_buffer);
+		}
+		if (conn_manager->conn[i].remote_server_buffer) {
+			free(conn_manager->conn[i].remote_server_buffer);
 		}
 		if (conn_manager->conn[i].res) {
 			free(conn_manager->conn[i].res);
-		
 		}
 		if (conn_manager->conn[i].req) {
 			free(conn_manager->conn[i].req);
-
 		}
 	
 	}
