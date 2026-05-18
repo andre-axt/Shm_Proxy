@@ -213,29 +213,28 @@ int main(){
                     }
                 }
 				else if(fd == conn->client_fd && (events[i].events & EPOLLOUT)) {
-					if(read_socket(conn, 1) == 0){
-                        if(conn->client_buffer && conn->client_buffer_len > 0){
-                            int result = read_buffer(conn, 1);
-                            
-                            if(result) {
-                                char *msg = "Error - read buffer failed\n";
-                                write(1, msg, 28);
-                                continue;
-                            }
-							else if(conn->client_buffer && conn->client_buffer_len > 0) {
-								int8_t sent = send_buffer(conn, conn->client_fd);
-								if(sent == -1){
-									int idx = find_idx_by_fd(conn_manager, conn->client_fd);
-									if(idx != -1) remove_connection(conn_manager, idx);
-									continue;
-								}
-								while(sent == 1){
-									sent = send_buffer(conn, conn->client_fd);
-								}
-								conn->client_buffer_len = 0;
-								memset(conn->client_buffer, '\0', conn->client_buffer_cap); 
-							}
-						}
+					if(conn->remote_server_buffer_len > 0) {
+
+				        int8_t sent = send_buffer(conn, conn->client_fd);
+				        while(sent == 1){
+				            sent = send_buffer(conn, conn->client_fd);
+				        }
+				        
+				        if(sent == -1){
+				            int idx = find_idx_by_fd(conn_manager, conn->client_fd);
+				            if(idx != -1) remove_connection(conn_manager, idx);
+				            continue;
+				        }
+				        
+				        if(conn->remote_server_buffer_len == 0) {
+				            struct epoll_event ev;
+				            ev.data.fd = conn->client_fd;
+				            
+				            ev.events = EPOLLIN | EPOLLET; 
+				            epoll_ctl(epfd, EPOLL_CTL_MOD, conn->client_fd, &ev);
+
+				        }
+				    }
 				}
 
                 else if(fd == conn->remote_server_fd && (events[i].events & EPOLLOUT)) {
