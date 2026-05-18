@@ -107,26 +107,32 @@ int8_t read_socket(Connection_t *conn, int8_t handler){
 
 }
 
-int8_t read_buffer(Connection_t *conn) {
+int8_t read_buffer(Connection_t *conn, int8_t handler) {
     const char *methods[] = {"GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS", "CONNECT"};
     int8_t num_methods = sizeof(methods) / sizeof(methods[0]);
+	if(handler > 2 || handler < 1) return -1;
 	
-    if (strncmp(conn->buffer, "HTTP", 4) == 0) {
-        conn->res = init_http_response();
-        conn->res = response_parser(conn->res, conn->buffer);
-        return 0;
-    }
-
-    for (int i = 0; i < num_methods; i++) {
-        if (strncmp(conn->buffer, methods[i], strlen(methods[i])) == 0) {
-			size_t len = strlen(methods[i]);
-			if (conn->buffer[len] == ' ' || conn->buffer[len] == '\0') {
-	            conn->req = init_http_request();
-	            conn->req = request_parser(conn->req, conn->buffer);
-				return 0; 
-		    }
-        }
-    }
+	if(handler == 1){
+	    if (strncmp(conn->remote_server_buffer, "HTTP", 4) == 0) {
+	        conn->res = init_http_response();
+	        conn->res = response_parser(conn->res, conn->remote_server_buffer);
+	        return 0;
+	    }
+		
+	}
+	else{
+	    for (int i = 0; i < num_methods; i++) {
+	        if (strncmp(conn->client_buffer, methods[i], strlen(methods[i])) == 0) {
+				size_t len = strlen(methods[i]);
+				if (conn->client_buffer[len] == ' ' || conn->client_buffer[len] == '\0') {
+		            conn->req = init_http_request();
+		            conn->req = request_parser(conn->req, conn->client_buffer);
+					return 0; 
+			    }
+	        }
+	    }
+		
+	}
 
     return 1; 
 }
@@ -169,9 +175,12 @@ ConnectionManager_t* init_connection_manager(uint8_t max_conn, int epoll_fd) {
 	for(int i = 0; i < max_conn; i++) {
 		manager->conn[i].client_fd = -1;
 		manager->conn[i].remote_server_fd = -1;
-		manager->conn[i].buffer = malloc(BUFFER_SIZE);
-		manager->conn[i].buffer_len = 0;
-		manager->conn[i].buffer_cap = BUFFER_SIZE;
+		manager->conn[i].client_buffer = malloc(BUFFER_SIZE);
+		manager->conn[i].remote_server_buffer = malloc(BUFFER_SIZE);
+		manager->conn[i].client_buffer_len = 0;
+		manager->conn[i].remote_server_buffer_len = 0;
+		manager->conn[i].client_buffer_cap = BUFFER_SIZE;
+		manager->conn[i].remote_server_buffer_cap = BUFFER_SIZE;
 		manager->conn[i].state = 0;
 		manager->conn[i].res = NULL;
 		manager->conn[i].req = NULL;
@@ -209,7 +218,8 @@ Connection_t* add_client_connection(ConnectionManager_t *manager, int client_fd)
 		if(manager->conn[i].client_fd == -1) {
 			manager->conn[i].client_fd = client_fd;
 			manager->conn[i].state = 0;
-			manager->conn[i].buffer_len = 0;
+			manager->conn[i].client_buffer_len = 0;
+			manager->conn[i].remote_server_buffer_len = 0;
 			manager->act_conn++;
 
 			struct epoll_event ev;
@@ -243,26 +253,50 @@ int find_idx_by_fd(ConnectionManager_t *manager, int fd) {
 }
 
 int8_t send_buffer(Connection_t *conn, int fd) {
-	if(fd == -1 || conn->buffer_len == 0) return 0;
-
-	ssize_t sent = send(fd, conn->buffer, conn->buffer_len, 0);
-	if(sent < 0) {
-		if(errno == EAGAIN || errno == EWOULDBLOCK) {
+	if(fd == -1) return -2;
+	if(fd == conn->client_fd && conn->client_buffer_len != 0){
+		ssize_t sent = send(fd, conn->client_buffer, conn->client_buffer_len, 0);
+		if(sent < 0) {
+			if(errno == EAGAIN || errno == EWOULDBLOCK) {
+				return 1;
+			}
+			return -1;
+		}
+		else if(sent == 0){
+			return -1;
+		}
+		else if((size_t)sent < conn->client_buffer_len) {
+			memmove(conn->client_buffer, conn->client_buffer + sent, conn->client_buffer_len - sent);
+			conn->client_buffer_len -= sent;
 			return 1;
 		}
-		return -1;
+
+		conn->client_buffer_len = 0;
+		return 0;
+		
 	}
-	else if(sent == 0){
-		return -1;
-	}
-	else if((size_t)sent < conn->buffer_len) {
-		memmove(conn->buffer, conn->buffer + sent, conn->buffer_len - sent);
-		conn->buffer_len -= sent;
-		return 1;
+	if(fd == conn->remote_server_fd && conn->remote_server_buffer_len != 0){
+		ssize_t sent = send(fd, conn->remote_server_buffer, conn->remote_server_buffer_len, 0);
+		if(sent < 0) {
+			if(errno == EAGAIN || errno == EWOULDBLOCK) {
+				return 1;
+			}
+			return -1;
+		}
+		else if(sent == 0){
+			return -1;
+		}
+		else if((size_t)sent < conn->remote_server_buffer_len) {
+			memmove(conn->remote_server_buffer, conn->remote_server_buffer + sent, conn->remote_server_buffer_len - sent);
+			conn->remote_server_buffer_len -= sent;
+			return 1;
+		}
+
+		conn->remote_server_buffer_len = 0;
+		return 0;
+		
 	}
 
-	conn->buffer_len = 0;
-	return 0;
 }
 
 void remove_connection(ConnectionManager_t *manager, int index) {
@@ -273,14 +307,23 @@ void remove_connection(ConnectionManager_t *manager, int index) {
 		epoll_ctl(manager->epoll_fd, EPOLL_CTL_DEL, conn->client_fd, NULL);
 		close(conn->client_fd);
 		conn->client_fd = -1;
+		if(conn->client_buffer){
+			free(conn->client_buffer);
+		}
 	}
 	if(conn->remote_server_fd != -1) {
 		epoll_ctl(manager->epoll_fd, EPOLL_CTL_DEL, conn->remote_server_fd, NULL);
 		close(conn->remote_server_fd);
 		conn->remote_server_fd = -1;
+		if(conn->remote_server_buffer){
+			free(conn->remote_server_buffer);
+		}
 	}
 	
-	conn->buffer_len = 0;
+	conn->client_buffer_len = 0;
+	conn->remote_server_buffer_len = 0;
+	conn->client_buffer_cap = 0;
+	conn->remote_server_buffer_cap = 0;
 	conn->state = 0;
 	manager->act_conn--;
 }
