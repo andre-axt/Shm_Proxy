@@ -123,7 +123,7 @@ int main(){
                 if(fd == conn->client_fd && (events[i].events & EPOLLIN)){
                     if(read_socket(conn, 1) == 0){
                         if(conn->client_buffer && conn->client_buffer_len > 0){
-                            int result = read_buffer(conn, 1);
+                            int result = read_buffer(conn, 2);
                             
                             if(result) {
                                 char *msg = "Error - read buffer failed\n";
@@ -178,7 +178,7 @@ int main(){
                                     }
                                 }
                                 else {
-                                    const char* host = get_header(conn->req->headers, conn->req->header_count, "Host:");
+                                    const char* host = get_header(conn->req->headers, conn->req->header_count, "Host");
                                     if(host){
                                         char *ip = get_ip_from_host(host);
                                         if(ip) {
