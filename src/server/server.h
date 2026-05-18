@@ -25,9 +25,12 @@ typedef struct {
 typedef struct {
 	int	client_fd;
 	int	remote_server_fd; 
-	char	*buffer;
-	size_t 	buffer_len;
-	size_t	buffer_cap; // Total allocated size
+	char	*client_buffer;
+	size_t 	client_buffer_len;
+	size_t	client_buffer_cap; 
+	char	*remote_server_buffer;
+	size_t 	remote_server_buffer_len;
+	size_t	remote_server_buffer_cap; 
 	int8_t	state; // 1 = STATE_WAITING_HOST, 2 = STATE_CONNECTING, 3 = STATE_CONNECTED, 4 = STATE_CLOSED
 	http_response_t *res;
 	http_request_t *req;
@@ -53,6 +56,6 @@ int find_idx_by_fd(ConnectionManager_t *manager, int fd);
 int8_t send_buffer(Connection_t *conn, int fd);
 void remove_connection(ConnectionManager_t *manager, int index);
 int8_t read_socket(Connection_t *conn, int8_t handler); // Set the handler to 1 to read the client socket and 2 to read the remote server socket, more features coming soon. :)
-int8_t read_buffer(Connection_t *conn);
+int8_t read_buffer(Connection_t *conn, int8_t handler); // Same idea as read_socket
 
 #endif
