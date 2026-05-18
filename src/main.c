@@ -122,8 +122,8 @@ int main(){
 
                 if(fd == conn->client_fd && (events[i].events & EPOLLIN)){
                     if(read_socket(conn, 1) == 0){
-                        if(conn->buffer && conn->buffer_len > 0){
-                            int result = read_buffer(conn);
+                        if(conn->client_buffer && conn->client_buffer_len > 0){
+                            int result = read_buffer(conn, 1);
                             
                             if(result) {
                                 char *msg = "Error - read buffer failed\n";
@@ -214,15 +214,15 @@ int main(){
                 }
 				else if(fd == conn->client_fd && (events[i].events & EPOLLOUT)) {
 					if(read_socket(conn, 1) == 0){
-                        if(conn->buffer && conn->buffer_len > 0){
-                            int result = read_buffer(conn);
+                        if(conn->client_buffer && conn->client_buffer_len > 0){
+                            int result = read_buffer(conn, 1);
                             
                             if(result) {
                                 char *msg = "Error - read buffer failed\n";
                                 write(1, msg, 28);
                                 continue;
                             }
-							else if(conn->buffer && conn->buffer_len > 0) {
+							else if(conn->client_buffer && conn->client_buffer_len > 0) {
 								int8_t sent = send_buffer(conn, conn->client_fd);
 								if(sent == -1){
 									int idx = find_idx_by_fd(conn_manager, conn->client_fd);
@@ -232,8 +232,8 @@ int main(){
 								while(sent == 1){
 									sent = send_buffer(conn, conn->client_fd);
 								}
-								conn->buffer_len = 0;
-								memset(conn->buffer, '\0', sizeof(conn->buffer_len)); 
+								conn->client_buffer_len = 0;
+								memset(conn->client_buffer, '\0', conn->client_buffer_cap); 
 							}
 						}
 				}
@@ -248,7 +248,7 @@ int main(){
                             char *response = "HTTP/1.1 200 Connection Established\r\n\r\n";
                             send(conn->client_fd, response, strlen(response), 0);
 
-                            conn->buffer_len = 0;
+                            conn->remote_server_buffer_len = 0;
                             
                             struct epoll_event ev_mod;
                             ev_mod.events = EPOLLIN | EPOLLET;
@@ -263,8 +263,8 @@ int main(){
                                 while(sent == 1){
                                     sent = send_buffer(conn, conn->remote_server_fd);
                                 }
-								conn->buffer_len = 0;
-								memset(conn->buffer, '\0', sizeof(conn->buffer_len)); 
+								conn->remote_server_buffer_len = 0;
+								memset(conn->remote_server_buffer, '\0', sizeof(conn->remote_server_buffer_len)); 
                             }
                             
                             struct epoll_event ev_mod;
@@ -276,7 +276,7 @@ int main(){
                 }
                 else if(fd == conn->remote_server_fd && (events[i].events & EPOLLIN)) {
                     if(read_socket(conn, 2) == 0){
-                        if(conn->buffer && conn->buffer_len > 0){
+                        if(conn->remote_server_buffer && conn->remote_server_buffer_len > 0){
 							struct epoll_event ev;
 							ev.data.fd = conn->client_fd; 
 							ev.events = EPOLLIN | EPOLLOUT; 
