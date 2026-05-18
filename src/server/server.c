@@ -72,6 +72,7 @@ int8_t read_socket(Connection_t *conn, int8_t handler){
 				} 
 	
 				conn->client_buffer = new_buffer;
+				conn->client_buffer[conn->client_buffer_len + 1] = "/0";
 				conn->client_buffer_cap = new_size;
 			}
 			
@@ -115,6 +116,7 @@ int8_t read_socket(Connection_t *conn, int8_t handler){
 				} 
 	
 				conn->remote_server_buffer = new_buffer;
+				conn->remote_server_buffer[conn->remote_server_buffer_len + 1] = "/0";
 				conn->remote_server_buffer_cap = new_size;
 			}
 			
