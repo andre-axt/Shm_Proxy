@@ -293,50 +293,41 @@ int find_idx_by_fd(ConnectionManager_t *manager, int fd) {
 }
 
 int8_t send_buffer(Connection_t *conn, int fd) {
-	if(fd == -1) return -2;
-	if(fd == conn->client_fd && conn->client_buffer_len != 0){
-		ssize_t sent = send(fd, conn->client_buffer, conn->client_buffer_len, 0);
-		if(sent < 0) {
-			if(errno == EAGAIN || errno == EWOULDBLOCK) {
-				return 1;
-			}
-			return -1;
-		}
-		else if(sent == 0){
-			return -1;
-		}
-		else if((size_t)sent < conn->client_buffer_len) {
-			memmove(conn->client_buffer, conn->client_buffer + sent, conn->client_buffer_len - sent);
-			conn->client_buffer_len -= sent;
-			return 1;
-		}
+    if(fd == -1) return 0;
 
-		conn->client_buffer_len = 0;
-		return 0;
+    char *buf_ptr = NULL;
+    size_t *buf_len = NULL;
+	
+    if (fd == conn->remote_server_fd) {
+        buf_ptr = conn->client_buffer;
+        buf_len = &conn->client_buffer_len;
 		
-	}
-	if(fd == conn->remote_server_fd && conn->remote_server_buffer_len != 0){
-		ssize_t sent = send(fd, conn->remote_server_buffer, conn->remote_server_buffer_len, 0);
-		if(sent < 0) {
-			if(errno == EAGAIN || errno == EWOULDBLOCK) {
-				return 1;
-			}
-			return -1;
-		}
-		else if(sent == 0){
-			return -1;
-		}
-		else if((size_t)sent < conn->remote_server_buffer_len) {
-			memmove(conn->remote_server_buffer, conn->remote_server_buffer + sent, conn->remote_server_buffer_len - sent);
-			conn->remote_server_buffer_len -= sent;
-			return 1;
-		}
-
-		conn->remote_server_buffer_len = 0;
-		return 0;
+    } else if (fd == conn->client_fd) {
+        buf_ptr = conn->remote_server_buffer;
+        buf_len = &conn->remote_server_buffer_len;
 		
-	}
+    }
 
+    if (buf_ptr == NULL || *buf_len == 0) return 0;
+
+    ssize_t sent = send(fd, buf_ptr, *buf_len, 0);
+    if(sent < 0) {
+        if(errno == EAGAIN || errno == EWOULDBLOCK) {
+            return 1; 
+        }
+        return -1; 
+    }
+    else if(sent == 0){
+        return -1;
+    }
+    else if((size_t)sent < *buf_len) {
+        memmove(buf_ptr, buf_ptr + sent, *buf_len - sent);
+        *buf_len -= sent;
+        return 1; 
+    }
+
+    *buf_len = 0; 
+    return 0;
 }
 
 void remove_connection(ConnectionManager_t *manager, int index) {
