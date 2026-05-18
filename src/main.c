@@ -171,7 +171,7 @@ int main(){
                                             }
                                             
                                             struct epoll_event ev_remote;
-                                            ev_remote.events = EPOLLIN | EPOLLOUT | EPOLLET;
+                                            ev_remote.events = EPOLLOUT | EPOLLET;
                                             ev_remote.data.fd = conn->remote_server_fd;
                                             epoll_ctl(epfd, EPOLL_CTL_ADD, conn->remote_server_fd, &ev_remote);
                                         }
@@ -239,40 +239,21 @@ int main(){
 				}
 
                 else if(fd == conn->remote_server_fd && (events[i].events & EPOLLOUT)) {
-                    if(conn->state == 2) {  
-                        conn->state = 3;  
+                    if (conn->state == 2) { 
+				        conn->state = 3;
+				    }
 
-                        if(conn->req && conn->req->method && 
-                           strcmp(conn->req->method, "CONNECT") == 0) {
- 
-                            char *response = "HTTP/1.1 200 Connection Established\r\n\r\n";
-                            send(conn->client_fd, response, strlen(response), 0);
-
-                            conn->remote_server_buffer_len = 0;
-                            
-                            struct epoll_event ev_mod;
-                            ev_mod.events = EPOLLIN | EPOLLET;
-                            ev_mod.data.fd = conn->client_fd;
-                            epoll_ctl(epfd, EPOLL_CTL_MOD, conn->client_fd, &ev_mod);
-                            
-                            ev_mod.data.fd = conn->remote_server_fd;
-                            epoll_ctl(epfd, EPOLL_CTL_MOD, conn->remote_server_fd, &ev_mod);
-                        } else {
-                            if(conn->req != NULL) {
-                                int8_t sent = send_buffer(conn, conn->remote_server_fd);
-                                while(sent == 1){
-                                    sent = send_buffer(conn, conn->remote_server_fd);
-                                }
-								conn->remote_server_buffer_len = 0;
-								memset(conn->remote_server_buffer, '\0', sizeof(conn->remote_server_buffer_len)); 
-                            }
-                            
-                            struct epoll_event ev_mod;
-                            ev_mod.events = EPOLLIN | EPOLLET;
-                            ev_mod.data.fd = conn->remote_server_fd;
-                            epoll_ctl(epfd, EPOLL_CTL_MOD, conn->remote_server_fd, &ev_mod);
-                        }
-                    }
+				    int8_t sent = send_buffer(conn, conn->remote_server_fd);
+				    while (sent == 1) {
+				        sent = send_buffer(conn, conn->remote_server_fd);
+				    }
+				    
+				    if (sent == 0) { 
+				        struct epoll_event ev_mod;
+				        ev_mod.events = EPOLLIN | EPOLLET;
+				        ev_mod.data.fd = conn->remote_server_fd;
+				        epoll_ctl(epfd, EPOLL_CTL_MOD, conn->remote_server_fd, &ev_mod);
+				    }
                 }
                 else if(fd == conn->remote_server_fd && (events[i].events & EPOLLIN)) {
                     if(read_socket(conn, 2) == 0){
