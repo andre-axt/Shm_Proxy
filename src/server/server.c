@@ -161,7 +161,6 @@ int8_t read_buffer(Connection_t *conn, int8_t handler) {
 	
 	if(handler == 1){
 	    if (strncmp(conn->remote_server_buffer, "HTTP", 4) == 0) {
-	        conn->res = init_http_response();
 	        conn->res = response_parser(conn->res, conn->remote_server_buffer);
 	        return 0;
 	    }
@@ -172,7 +171,6 @@ int8_t read_buffer(Connection_t *conn, int8_t handler) {
 	        if (strncmp(conn->client_buffer, methods[i], strlen(methods[i])) == 0) {
 				size_t len = strlen(methods[i]);
 				if (conn->client_buffer[len] == ' ' || conn->client_buffer[len] == '\0') {
-		            conn->req = init_http_request();
 		            conn->req = request_parser(conn->req, conn->client_buffer);
 					return 0; 
 			    }
@@ -239,7 +237,7 @@ ConnectionManager_t* init_connection_manager(uint8_t max_conn, int epoll_fd) {
 void free_connection_manager(ConnectionManager_t* conn_manager){
 	if (!conn_manager) return;
 
-	for (int i = 0; i < conn_manager->act_conn; i++){
+	for (int i = 0; i < conn_manager->max_conn; i++){
 		if (conn_manager->conn[i].client_buffer) {
 			free(conn_manager->conn[i].client_buffer);
 		}
