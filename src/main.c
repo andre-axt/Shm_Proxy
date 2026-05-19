@@ -123,94 +123,103 @@ int main(){
                 if(fd == conn->client_fd && (events[i].events & EPOLLIN)){
                     if(read_socket(conn, 1) == 0){
                         if(conn->client_buffer && conn->client_buffer_len > 0){
-							if(conn->req != NULL) free_request(conn->req);
-							conn->req = init_http_request();
-                            int result = read_buffer(conn, 2);
-                            
-                            if(result) {
-                                char *msg = "Error - read buffer failed\n";
-                                write(1, msg, 28);
-                                continue;
+							if(conn->state == 0){
+								
+								if(conn->req != NULL) free_request(conn->req);
+								conn->req = init_http_request();
+	                            int result = read_buffer(conn, 2);
+	                            
+	                            if(result) {
+	                                continue;
+	                            }
+	                            else{  
+	                                if(conn->req && conn->req->method && 
+	                                   strcmp(conn->req->method, "CONNECT") == 0) {
+	                                    
+	                                    char *host_port = conn->req->path;
+	                                    if(host_port) {
+	                                        char hostname[256];
+	                                        int port = 443;  
+	                                        char *colon = strchr(host_port, ':');
+	                                        
+	                                        if(colon) {
+	                                            int host_len = colon - host_port;
+	                                            if(host_len < 256) {
+	                                                strncpy(hostname, host_port, host_len);
+	                                                hostname[host_len] = '\0';
+	                                                port = atoi(colon + 1);
+	                                            }
+	                                        } else {
+	                                            strcpy(hostname, host_port);
+	                                        }
+	                                        
+	                                        char *ip = get_ip_from_host(hostname);
+	                                        if(ip) {
+	                                            struct sockaddr_in remote_addr;
+	                                            remote_addr.sin_family = AF_INET;
+	                                            remote_addr.sin_addr.s_addr = inet_addr(ip);
+	                                            remote_addr.sin_port = htons(port);
+	                                            
+	                                            if(connect(conn->remote_server_fd, (struct sockaddr*)&remote_addr, sizeof(remote_addr)) < 0) {
+	                                                if(errno != EINPROGRESS) {
+	                                                    int idx = find_idx_by_fd(conn_manager, conn->client_fd);
+	                                                    if(idx != -1) remove_connection(conn_manager, idx);
+	                                                    continue;
+	                                                }
+	                                                conn->state = 2;  
+	                                            } else {
+	                                                conn->state = 3;  
+	                                            }
+
+												char *ok_msg = "HTTP/1.1 200 Connection Established\r\n\r\n";
+                                                send(conn->client_fd, ok_msg, strlen(ok_msg), 0);
+
+												conn->client_buffer_len = 0;
+												
+	                                            struct epoll_event ev_remote;
+	                                            ev_remote.events = EPOLLOUT | EPOLLET;
+	                                            ev_remote.data.fd = conn->remote_server_fd;
+	                                            epoll_ctl(epfd, EPOLL_CTL_ADD, conn->remote_server_fd, &ev_remote);
+	                                        }
+	                                    }
+	                                }
+	                                else {
+	                                    const char* host = get_header(conn->req->headers, conn->req->header_count, "Host");
+	                                    if(host){
+	                                        char *ip = get_ip_from_host(host);
+	                                        if(ip) {
+	                                            struct sockaddr_in remote_addr;
+	                                            remote_addr.sin_family = AF_INET;
+	                                            remote_addr.sin_addr.s_addr = inet_addr(ip);
+	                                            remote_addr.sin_port = htons(80);
+	                                            
+	                                            if(connect(conn->remote_server_fd, (struct sockaddr*)&remote_addr, 
+	                                                      sizeof(remote_addr)) < 0) {
+	                                                if(errno != EINPROGRESS) {
+	                                                    int idx = find_idx_by_fd(conn_manager, conn->client_fd);
+	                                                    if(idx != -1) remove_connection(conn_manager, idx);
+	                                                    continue;
+	                                                }
+	                                                conn->state = 2;
+	                                            } else {
+	                                                conn->state = 3;
+	                                            }
+	                                            
+	                                            struct epoll_event ev_remote;
+	                                            ev_remote.events = EPOLLIN | EPOLLOUT | EPOLLET;
+	                                            ev_remote.data.fd = conn->remote_server_fd;
+	                                            epoll_ctl(epfd, EPOLL_CTL_ADD, conn->remote_server_fd, &ev_remote);
+	                                        }
+	                                    }
+									}
+								}
                             }
-                            else{  
-                                if(conn->req && conn->req->method && 
-                                   strcmp(conn->req->method, "CONNECT") == 0) {
-                                    
-                                    char *host_port = conn->req->path;
-                                    if(host_port) {
-                                        char hostname[256];
-                                        int port = 443;  
-                                        char *colon = strchr(host_port, ':');
-                                        
-                                        if(colon) {
-                                            int host_len = colon - host_port;
-                                            if(host_len < 256) {
-                                                strncpy(hostname, host_port, host_len);
-                                                hostname[host_len] = '\0';
-                                                port = atoi(colon + 1);
-                                            }
-                                        } else {
-                                            strcpy(hostname, host_port);
-                                        }
-                                        
-                                        char *ip = get_ip_from_host(hostname);
-                                        if(ip) {
-                                            struct sockaddr_in remote_addr;
-                                            remote_addr.sin_family = AF_INET;
-                                            remote_addr.sin_addr.s_addr = inet_addr(ip);
-                                            remote_addr.sin_port = htons(port);
-                                            
-                                            if(connect(conn->remote_server_fd, (struct sockaddr*)&remote_addr, 
-                                                      sizeof(remote_addr)) < 0) {
-                                                if(errno != EINPROGRESS) {
-                                                    int idx = find_idx_by_fd(conn_manager, conn->client_fd);
-                                                    if(idx != -1) remove_connection(conn_manager, idx);
-                                                    continue;
-                                                }
-                                                conn->state = 2;  
-                                            } else {
-                                                conn->state = 3;  
-                                            }
-                                            
-                                            struct epoll_event ev_remote;
-                                            ev_remote.events = EPOLLOUT | EPOLLET;
-                                            ev_remote.data.fd = conn->remote_server_fd;
-                                            epoll_ctl(epfd, EPOLL_CTL_ADD, conn->remote_server_fd, &ev_remote);
-                                        }
-                                    }
-                                }
-                                else {
-                                    const char* host = get_header(conn->req->headers, conn->req->header_count, "Host");
-                                    if(host){
-                                        char *ip = get_ip_from_host(host);
-                                        if(ip) {
-                                            struct sockaddr_in remote_addr;
-                                            remote_addr.sin_family = AF_INET;
-                                            remote_addr.sin_addr.s_addr = inet_addr(ip);
-                                            remote_addr.sin_port = htons(80);
-                                            
-                                            if(connect(conn->remote_server_fd, (struct sockaddr*)&remote_addr, 
-                                                      sizeof(remote_addr)) < 0) {
-                                                if(errno != EINPROGRESS) {
-                                                    int idx = find_idx_by_fd(conn_manager, conn->client_fd);
-                                                    if(idx != -1) remove_connection(conn_manager, idx);
-                                                    continue;
-                                                }
-                                                conn->state = 2;
-                                            } else {
-												char *msg = "Success - remote_server_fd connect\n";
-												write(1, msg, 35);
-                                                conn->state = 3;
-                                            }
-                                            
-                                            struct epoll_event ev_remote;
-                                            ev_remote.events = EPOLLIN | EPOLLOUT | EPOLLET;
-                                            ev_remote.data.fd = conn->remote_server_fd;
-                                            epoll_ctl(epfd, EPOLL_CTL_ADD, conn->remote_server_fd, &ev_remote);
-                                        }
-                                    }
-                                }
-                            }
+							else if(conn->state >= 2){
+								struct epoll_event ev_remote;
+								ev_remote.events = EPOLLIN | EPOLLOUT | EPOLLET;
+								ev_remote.data.fd = conn->remote_server_fd;
+								epoll_ctl(epfd, EPOLL_CTL_MOD, conn->remote_server_fd, &ev_remote);
+							}
                         }
                     }
                 }
@@ -261,7 +270,7 @@ int main(){
                         if(conn->remote_server_buffer && conn->remote_server_buffer_len > 0){
 							struct epoll_event ev;
 							ev.data.fd = conn->client_fd; 
-							ev.events = EPOLLIN | EPOLLOUT; 
+							ev.events = EPOLLIN | EPOLLOUT | EPOLLET; 
 							
 							epoll_ctl(epfd, EPOLL_CTL_MOD, conn->client_fd, &ev);							
                         }
