@@ -123,6 +123,8 @@ int main(){
                 if(fd == conn->client_fd && (events[i].events & EPOLLIN)){
                     if(read_socket(conn, 1) == 0){
                         if(conn->client_buffer && conn->client_buffer_len > 0){
+							if(conn->req != NULL) free_request(conn->req);
+							conn->req = init_http_request();
                             int result = read_buffer(conn, 2);
                             
                             if(result) {
