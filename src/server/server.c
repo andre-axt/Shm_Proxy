@@ -140,7 +140,6 @@ int8_t read_socket(Connection_t *conn, int8_t handler){
 			}
 			
 		}
-	
 		conn->remote_server_buffer_len = total_read;
 	
 		if(total_read >= conn->remote_server_buffer_cap) {
@@ -151,7 +150,6 @@ int8_t read_socket(Connection_t *conn, int8_t handler){
 		return 0;
 	}
 	
-
 }
 
 int8_t read_buffer(Connection_t *conn, int8_t handler) {
