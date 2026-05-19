@@ -149,7 +149,8 @@ int8_t read_socket(Connection_t *conn, int8_t handler){
 		conn->remote_server_buffer[total_read] = '\0';
 		return 0;
 	}
-	
+
+	return -1;
 }
 
 int8_t read_buffer(Connection_t *conn, int8_t handler) {
