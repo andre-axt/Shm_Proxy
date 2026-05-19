@@ -241,7 +241,7 @@ int main(){
 				            struct epoll_event ev;
 				            ev.data.fd = conn->client_fd;
 				            
-				            ev.events = EPOLLIN | EPOLLET; 
+				            ev.events = EPOLLIN; 
 				            epoll_ctl(epfd, EPOLL_CTL_MOD, conn->client_fd, &ev);
 
 				        }
@@ -257,10 +257,16 @@ int main(){
 				    while (sent == 1) {
 				        sent = send_buffer(conn, conn->remote_server_fd);
 				    }
+
+					if (sent == -1) {
+                        int idx = find_idx_by_fd(conn_manager, fd);
+                        if(idx != -1) remove_connection(conn_manager, idx);
+                        continue;
+                    }
 				    
 				    if (sent == 0) { 
 				        struct epoll_event ev_mod;
-				        ev_mod.events = EPOLLIN | EPOLLET;
+				        ev_mod.events = EPOLLIN;
 				        ev_mod.data.fd = conn->remote_server_fd;
 				        epoll_ctl(epfd, EPOLL_CTL_MOD, conn->remote_server_fd, &ev_mod);
 				    }
