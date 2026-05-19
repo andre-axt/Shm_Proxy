@@ -72,7 +72,7 @@ int8_t read_socket(Connection_t *conn, int8_t handler){
 				} 
 	
 				conn->client_buffer = new_buffer;
-				conn->client_buffer[conn->client_buffer_len + 1] = "/0";
+				conn->client_buffer[conn->client_buffer_len + 1] = '\0';
 				conn->client_buffer_cap = new_size;
 			}
 			
@@ -93,12 +93,15 @@ int8_t read_socket(Connection_t *conn, int8_t handler){
 			}
 			
 		}
-	
+
 		conn->client_buffer_len = total_read;
-	
-		if(total_read < conn->client_buffer_cap) {
-			conn->client_buffer[total_read] = '\0';
-		}
+		
+		if (total_read >= conn->client_buffer_cap) {
+			
+	        conn->client_buffer_cap = total_read + 1;
+	        conn->client_buffer = realloc(conn->client_buffer, conn->client_buffer_cap);
+	    }
+	    conn->client_buffer[total_read] = '\0';
 		return 0;
 	}
 	if(handler == 2){
@@ -116,7 +119,7 @@ int8_t read_socket(Connection_t *conn, int8_t handler){
 				} 
 	
 				conn->remote_server_buffer = new_buffer;
-				conn->remote_server_buffer[conn->remote_server_buffer_len + 1] = "/0";
+				conn->remote_server_buffer[conn->remote_server_buffer_len + 1] = '\0';
 				conn->remote_server_buffer_cap = new_size;
 			}
 			
@@ -140,9 +143,11 @@ int8_t read_socket(Connection_t *conn, int8_t handler){
 	
 		conn->remote_server_buffer_len = total_read;
 	
-		if(total_read < conn->remote_server_buffer_cap) {
-			conn->remote_server_buffer[total_read] = '\0';
+		if(total_read >= conn->remote_server_buffer_cap) {
+			conn->remote_server_buffer_cap = total_read + 1;
+			conn->remote_server_buffer = realloc(conn->remote_server_buffer, conn->remote_server_buffer_cap);
 		}
+		conn->remote_server_buffer[total_read] = '\0';
 		return 0;
 	}
 	
