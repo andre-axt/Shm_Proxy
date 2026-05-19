@@ -187,7 +187,7 @@ char* get_ip_from_host(const char* hostname){
 	static char ipstr[INET6_ADDRSTRLEN];
 
 	memset(&hints, 0, sizeof(hints));
-	hints.ai_family = AF_UNSPEC;
+	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_STREAM;
 
 	if (getaddrinfo(hostname, NULL, &hints, &results)  != 0) {
