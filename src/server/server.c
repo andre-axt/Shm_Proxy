@@ -345,23 +345,17 @@ void remove_connection(ConnectionManager_t *manager, int index) {
 		epoll_ctl(manager->epoll_fd, EPOLL_CTL_DEL, conn->client_fd, NULL);
 		close(conn->client_fd);
 		conn->client_fd = -1;
-		if(conn->client_buffer){
-			free(conn->client_buffer);
-		}
+
 	}
 	if(conn->remote_server_fd != -1) {
 		epoll_ctl(manager->epoll_fd, EPOLL_CTL_DEL, conn->remote_server_fd, NULL);
 		close(conn->remote_server_fd);
 		conn->remote_server_fd = -1;
-		if(conn->remote_server_buffer){
-			free(conn->remote_server_buffer);
-		}
+
 	}
 	
 	conn->client_buffer_len = 0;
 	conn->remote_server_buffer_len = 0;
-	conn->client_buffer_cap = 0;
-	conn->remote_server_buffer_cap = 0;
 	conn->state = 0;
 	manager->act_conn--;
 }
