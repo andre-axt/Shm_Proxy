@@ -1,4 +1,5 @@
 #include "server.h"
+#include "config.h"
 #include <errno.h>
 #include <stdlib.h>
 #include <signal.h>
@@ -34,7 +35,7 @@ int main(){
     server->protocol = 0;
     server->address.sin_family = AF_INET;
     server->address.sin_addr.s_addr = INADDR_ANY;
-    server->address.sin_port = htons(PORT);
+    server->address.sin_port = htons(BIND_PORT);
     server->backlog = MAX_CONNECTIONS;  
 	
     epfd = epoll_create1(0);
