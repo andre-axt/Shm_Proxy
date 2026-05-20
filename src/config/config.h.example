@@ -1,0 +1,7 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
+#define BIND_PORT xxxx
+#define BIND_IP "x.x.x.x"
+
+#endif

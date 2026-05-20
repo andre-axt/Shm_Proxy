@@ -58,3 +58,5 @@ dkms.conf
 build/
 bin/
 
+# Local config
+config.h
