@@ -3,7 +3,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <signal.h>
-#include <string.h>  
+#include <string.h>
 
 #define MAX_CONNECTIONS 100
 
@@ -92,7 +92,7 @@ int main(){
                 if(client_fd > 0) {
 					char ip_str[INET_ADDRSTRLEN];
 					inet_ntop(AF_INET, &(client_addr.sin_addr), ip_str, INET_ADDRSTRLEN);
-					if(ip_str == BIND_IP){
+					if(strcmp(ip_str, BIND_IP) == 0){
 	                    set_nonblocking(client_fd);
 	                    Connection_t *conn = add_client_connection(conn_manager, client_fd);
 	                    if(conn == NULL) {
