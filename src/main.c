@@ -1,5 +1,6 @@
 #include "server.h"
 #include "config.h"
+#include "shm_cache.h"
 #include <errno.h>
 #include <stdlib.h>
 #include <signal.h>
@@ -10,6 +11,7 @@
 Socket_t *server;
 int epfd;
 ConnectionManager_t *conn_manager;
+Cache_t* cache;
 
 void stop_server(int sig){
     if(server && server->socket_fd != -1){
@@ -78,6 +80,7 @@ int main(){
     epoll_ctl(epfd, EPOLL_CTL_ADD, server->socket_fd, &ev);
     
     conn_manager = init_connection_manager(MAX_CONNECTIONS, epfd);
+	cache = init_cache();
     
     while(1){
         int nfds = epoll_wait(epfd, events, MAX_EVENTS, -1);
