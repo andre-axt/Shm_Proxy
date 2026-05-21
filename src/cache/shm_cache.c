@@ -32,43 +32,35 @@ int8_t add_cache(Cache_t *cache, const char *url, const char *data){
 	uint16_t id = hash(url);
 	time_t time;
 	CacheEntry_t *entry = cache->entries[id];
-	uint8_t x = 0;
-	time_t y;
+	uint8_t aux = 0;
+	time_t y = entry->timestamp;
 	uint8_t z = 0;
-	while(entry){
-		if(entry->next == cache->entries[id]){
-			strcpy(cache->entries[z].url, url);
-        		strcpy(cache->entries[z].data, data);
-        		entry->timestamp = time(&time);
-        		strcpy(entry->url, url);
-			return 0;
-		}
-		
+	while(entry && aux <= 5){
 		if(strcmp(entry->url, url) == 0){
-                        strcpy(entry->data, data);
-                        entry->timestamp = time(&time);
+            strcpy(entry->data, data);
+            entry->timestamp = time(&time);
 			return 0;
-	        }
-		x++;
+	    }
 		if(entry->timestamp < time(&y)){
 			y = entry->timestamp;
-			z = x;
+			z = aux;
 		}	
+		aux++;
 
 		entry = entry->next;
  							
 	}
-        strcpy(entry->data, data);
-        entry->timestamp = time(&time);
-        entry->valid = 1;
-        if(id < TABLE_SIZE){
-        	entry->next = cache->entries[id+1];
+	
+	entry->timestamp = time(&time);
+	entry->valid = 1;
+	if(id < TABLE_SIZE){
+		entry->next = cache->entries[id+1];
 
-        }
-        else {
-        	entry->next = cache->entries[0];
-        }
-        cache->count++;
+	}
+	else {
+		entry->next = cache->entries[0];
+	}
+	cache->count++;
 
 	return 0;
 	
@@ -77,8 +69,13 @@ int8_t add_cache(Cache_t *cache, const char *url, const char *data){
 
 http_response_t* find_cache(Cache_t *cache, const char *url){
 	hash_url = hash(url);
+	time_t time = time(&time);
 	for(int i = 0; i <= 4; i++){
 		if(cache->entries[hash_url + i].url = url){
+			int32_t dif_time = cache->entries[hash_url + i].timestamp - time;
+			if(dif_time <= 600){
+				return NULL;
+			}
 			return cache->entries[hash_url + i].response;		
 		}
 		
