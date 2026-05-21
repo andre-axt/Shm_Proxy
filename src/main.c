@@ -250,7 +250,7 @@ int main(){
 				            struct epoll_event ev;
 				            ev.data.fd = conn->client_fd;
 				            
-				            ev.events = EPOLLIN; 
+				            ev.events = EPOLLIN | EPOLLET; 
 				            epoll_ctl(epfd, EPOLL_CTL_MOD, conn->client_fd, &ev);
 
 				        }
@@ -275,7 +275,7 @@ int main(){
 				    
 				    if (sent == 0) { 
 				        struct epoll_event ev_mod;
-				        ev_mod.events = EPOLLIN;
+				        ev_mod.events = EPOLLIN | EPOLLET;
 				        ev_mod.data.fd = conn->remote_server_fd;
 				        epoll_ctl(epfd, EPOLL_CTL_MOD, conn->remote_server_fd, &ev_mod);
 				    }
