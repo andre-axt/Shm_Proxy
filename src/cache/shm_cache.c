@@ -14,11 +14,14 @@ uint16_t hash(const char *url){
         return sum % TABLE_SIZE;
 }
 
-int8_t init_cache(Cache_t *cache){
+Cache_t* init_cache(){
+	Cache_t* cache = malloc(sizeof(Cache_t));
 	cache->count = 0;
 	for (int i = 0; i < TABLE_SIZE; i++) {
 		cache->entries[i] = NULL;
 	}
+
+	return cache;
 
 }
 
