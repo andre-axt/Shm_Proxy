@@ -160,14 +160,13 @@ int8_t read_buffer(Cache_t *cache, Connection_t *conn, int8_t handler) {
 	
 	if(handler == 1){
 	    if (strncmp(conn->remote_server_buffer, "HTTP", 4) == 0) {
-			char buffer = conn->remote_server_buffer;
 	        conn->res = response_parser(conn->res, conn->remote_server_buffer);
-			if(conn->res->status_code != 200 || (get_header(conn->res->headers, conn->res->header_count, "Cache-control") != "public" 
+			if(conn->res->status_code != 200 || strcmp((get_header(conn->res->headers, conn->res->header_count, "Cache-control")), "public") 
 				&& get_header(conn->res->headers, conn->res->header_count, "Cache-control")){
 				return 0;
 			} 
 			if(find_cache(cache, conn->req->path) != NULL) return 2;
-			add_cache(cache, conn->req->path, buffer);
+			add_cache(cache, conn->req->path, conn->remote_server_buffer);
 	        return 0;
 	    }
 		
