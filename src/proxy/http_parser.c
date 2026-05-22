@@ -17,6 +17,27 @@ static void parse_query_string(char *path, char **query_string, char **clean_pat
        
 }
 
+static int8_t parse_headers(char *buffer, char ***headers, int8_t *header_count) {
+        char *line = buffer;
+        int count = 0;
+        char **x_headers = malloc(100 * sizeof(char*));
+
+        while (*line != '\0' && count < 100){
+                char *end = strstr(line, "\r\n");
+                if (!end) break;
+                if (end == line) break;
+                int line_len = end - line;
+                x_headers[count] = strndup(line, line_len);
+                count++;
+
+                line = end + 2;
+        }
+
+        *headers = x_headers;
+        *header_count = count;
+        return 0;
+}
+
 static char *parse_chunked_body(char *chunked_data, size_t *body_length) {
         char *result = NULL;
         int total_size = 0;
@@ -101,26 +122,6 @@ void free_response(http_response_t *res){
 }
 
 
-int8_t parse_headers(char *buffer, char ***headers, int8_t *header_count) {
-        char *line = buffer;
-        int count = 0;
-        char **x_headers = malloc(100 * sizeof(char*));
-
-        while (*line != '\0' && count < 100){
-                char *end = strstr(line, "\r\n");
-                if (!end) break;
-                if (end == line) break;
-                int line_len = end - line;
-                x_headers[count] = strndup(line, line_len);
-                count++;
-
-                line = end + 2;
-        }
-
-        *headers = x_headers;
-        *header_count = count;
-        return 0;
-}
 
 char *get_header(char **headers, int header_count, const char *name) {
         for (int i = 0; i < header_count; i++) {
