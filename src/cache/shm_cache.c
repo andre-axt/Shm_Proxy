@@ -70,7 +70,7 @@ int8_t add_cache(Cache_t *cache, const char *url, const char *data){
 }
 
 
-char* find_cache(Cache_t *cache, const char *url){
+CacheEntry_t* find_cache(Cache_t *cache, const char *url){
 	int16_t id = hash(url);
 	CacheEntry_t *entry = cache->entries[id];
 	time_t time = time(NULL);
