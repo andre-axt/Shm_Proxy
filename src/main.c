@@ -1,6 +1,6 @@
+#include "shm_cache.h"
 #include "server.h"
 #include "config.h"
-#include "shm_cache.h"
 #include <errno.h>
 #include <stdlib.h>
 #include <signal.h>

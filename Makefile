@@ -1,6 +1,6 @@
 CC = gcc
 
-INCLUDES = -I$(SRCDIR) -I$(SERVERDIR) -I$(PROXYDIR) -I$(CONFIGDIR)
+INCLUDES = -I$(SRCDIR) -I$(SERVERDIR) -I$(PROXYDIR) -I$(CONFIGDIR) -I$(CACHEDIR)
 CFLAGS = -Wall -Wextra -g -pthread $(INCLUDES)
 
 LDLIBS = -pthread
@@ -11,16 +11,18 @@ SRCDIR = src
 PROXYDIR = $(SRCDIR)/proxy
 SERVERDIR = $(SRCDIR)/server
 CONFIGDIR = $(SRCDIR)/config
+CACHEDIR = $(SRCDIR)/cache
 BUILDDIR = build
 BINDIR = bin
 
 SOURCES = $(wildcard $(SRCDIR)/*.c) \
           $(wildcard $(PROXYDIR)/*.c) \
-          $(wildcard $(SERVERDIR)/*.c) 
+          $(wildcard $(SERVERDIR)/*.c) \
+	  $(wildcard $(CACHEDIR)/*.c) 
 
 OBJECTS = $(patsubst %.c,$(BUILDDIR)/%.o,$(notdir $(SOURCES)))
 
-VPATH = $(SRCDIR) $(PROXYDIR) $(SERVERDIR)
+VPATH = $(SRCDIR) $(PROXYDIR) $(SERVERDIR) $(CACHEDIR)
 
 all: $(BINDIR)/$(TARGET)
 
