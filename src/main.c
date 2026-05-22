@@ -139,7 +139,7 @@ int main(){
 								
 								if(conn->req != NULL) free_request(conn->req);
 								conn->req = init_http_request();
-	                            int result = read_buffer(conn, 2);
+	                            int result = read_buffer(cache, conn, 2);
 	                            
 	                            if(result == 1) {
 	                                continue;
@@ -277,8 +277,8 @@ int main(){
 				    if (sent == 1) {
 				        struct epoll_event ev_client;
 				        ev_client.events = EPOLLONESHOT;
-				        ev_mod.data.fd = conn->client_fd;
-				        epoll_ctl(epfd, EPOLL_CTL_MOD, conn->client_fd, &ev_mod);
+				        ev_client.data.fd = conn->client_fd;
+				        epoll_ctl(epfd, EPOLL_CTL_MOD, conn->client_fd, &ev_client);
 				    }
 
 					if (sent == -1) {
