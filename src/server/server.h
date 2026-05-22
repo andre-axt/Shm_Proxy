@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include "http_parser.h"
+#include "shm_cache.h"
 
 #define MAX_EVENTS 100
 #define BUFFER_SIZE 8192
@@ -55,6 +56,6 @@ int find_idx_by_fd(ConnectionManager_t *manager, int fd);
 int8_t send_buffer(Connection_t *conn, int fd);
 void remove_connection(ConnectionManager_t *manager, int index);
 int8_t read_socket(Connection_t *conn, int8_t handler); // Set the handler to 1 to read the client socket and 2 to read the remote server socket, more features coming soon. :)
-int8_t read_buffer(Connection_t *conn, int8_t handler); // Same idea as read_socket
+int8_t read_buffer(Cache_t *cache, Connection_t *conn, int8_t handler); // Same idea as read_socket
 
 #endif
