@@ -153,7 +153,7 @@ int8_t read_socket(Connection_t *conn, int8_t handler){
 	return -1;
 }
 
-int8_t read_buffer(Connection_t *conn, int8_t handler) {
+int8_t read_buffer(Cache_t *cache, Connection_t *conn, int8_t handler) {
     const char *methods[] = {"GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS", "CONNECT"};
     int8_t num_methods = sizeof(methods) / sizeof(methods[0]);
 	if(handler > 2 || handler < 1) return -1;
