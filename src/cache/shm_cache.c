@@ -34,43 +34,58 @@ Cache_t* init_cache(){
 int8_t content_filtering(const char *url, const char *data);
 
 
-int8_t add_cache(Cache_t *cache, const char *url, const char *data){
-	uint16_t id = hash(url);
-	CacheEntry_t entry = cache->entries[id];
-	uint8_t aux = 0;
-	time_t time = entry->timestamp;
-	CacheEntry_t *aux_entry;
-	while(entry && aux <= 4){
-		if(strcmp(entry->url, url) == 0){
-            strcpy(entry->response, data);
-			entry->response = data;
-            entry->timestamp = time(NULL);
-			return 0;
-	    }
-		if(difftime(entry->timestamp, time) < 0){
-			y = entry->timestamp;
-			aux_entry = entry;
-		}	
-		aux++;
+int8_t add_cache(Cache_t *cache, const char *url, const char *data) {
+    if (!cache || !url || !data) return -1;
+    
+    uint16_t id = hash(url);
+    CacheEntry_t *entry = &cache->entries[id]; 
+    
+    uint8_t aux = 0;
+    CacheEntry_t *oldest_entry = NULL;
+    time_t oldest_time = time(NULL);
 
-		entry = entry->next;
- 							
-	}
-	aux_entry->timestamp = time(NULL);
-	aux_entry->valid = 1;
-	aux_entry->response = data;
-	if(id < TABLE_SIZE){
-		entry->next = cache->entries[id+1];
+    CacheEntry_t *current = entry;
+    while (current && aux < 4) {  
+        if (strcmp(current->url, url) == 0) {
 
-	}
-	else {
-		entry->next = cache->entries[0];
-	}
+            if (current->response) {
+                free(current->response);
+            }
+            current->response = strdup(data); 
+            current->response_len = strlen(data);
+            current->timestamp = time(NULL);
+            return 0;
+        }
+        
+        if (current->timestamp < oldest_time) {
+            oldest_time = current->timestamp;
+            oldest_entry = current;
+        }
+        
+        aux++;
+        current = current->next;
+    }
 	
-	cache->count++;
-
-	return 0;
-	
+   
+    if (oldest_entry) {
+            entry = oldest_entry;
+            if (entry->response) {
+                free(entry->response);
+            }
+        } else {
+            return -1;  
+        }
+    }
+    
+    strncpy(entry->url, url, URL_MAX - 1);
+    entry->url[URL_MAX - 1] = '\0';
+    entry->response = strdup(data);
+    entry->response_len = strlen(data);
+    entry->timestamp = time(NULL);
+    entry->next = NULL;  
+    
+    cache->count++;
+    return 0;
 }
 
 
