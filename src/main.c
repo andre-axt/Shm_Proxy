@@ -141,9 +141,17 @@ int main(){
 								conn->req = init_http_request();
 	                            int result = read_buffer(conn, 2);
 	                            
-	                            if(result) {
+	                            if(result == 1) {
 	                                continue;
 	                            }
+								if(result == 2) {
+									CacheEntry_t *entry = find_cache(cache, conn->req->path);
+									send(conn->client_fd, entry->response, entry->response_len, 0);
+									struct epoll_event ev_remote;
+									ev_remote.events = EPOLLIN | EPOLLOUT | EPOLLET;
+									ev_remote.data.fd = conn->remote_server_fd;
+									epoll_ctl(epfd, EPOLL_CTL_ADD, conn->remote_server_fd, &ev_remote);
+								}
 	                            else{  
 	                                if(conn->req && conn->req->method && 
 	                                   strcmp(conn->req->method, "CONNECT") == 0) {
