@@ -37,7 +37,8 @@ int8_t add_cache(Cache_t *cache, const char *url, const char *data){
 	uint8_t z = 0;
 	while(entry && aux <= 5){
 		if(strcmp(entry->url, url) == 0){
-            strcpy(entry->data, data);
+            strcpy(entry->response, data);
+			entry->response = strlen(data);
             entry->timestamp = time(&time);
 			return 0;
 	    }
