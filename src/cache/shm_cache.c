@@ -63,7 +63,7 @@ int8_t add_cache(Cache_t *cache, const char *url, const char *data) {
         }
         
         aux++;
-        current = current->next;
+        current = (CacheEntry_t*)current->next;
     }
 	
    
@@ -72,10 +72,10 @@ int8_t add_cache(Cache_t *cache, const char *url, const char *data) {
             if (entry->response) {
                 free(entry->response);
             }
-        } else {
-            return -1;  
-        }
-    }
+        } 
+	else {
+		return -1;  
+	}
     
     strncpy(entry->url, url, URL_MAX - 1);
     entry->url[URL_MAX - 1] = '\0';
