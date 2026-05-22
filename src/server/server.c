@@ -166,8 +166,8 @@ int8_t read_buffer(Cache_t *cache, Connection_t *conn, int8_t handler) {
 				&& get_header(conn->res->headers, conn->res->header_count, "Cache-control")){
 				return 0;
 			} 
-			if(find_cache(cache, conn->res->path) != NULL) return 2;
-			add_cache(cache, conn->res->path, buffer);
+			if(find_cache(cache, conn->req->path) != NULL) return 2;
+			add_cache(cache, conn->req->path, buffer);
 	        return 0;
 	    }
 		
