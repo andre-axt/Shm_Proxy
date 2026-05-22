@@ -3,7 +3,6 @@
 
 #include <time.h>
 #include <stdint.h>
-#include "http_parser.h"
 
 #define TABLE_SIZE 10
 #define URL_MAX	256
@@ -11,7 +10,8 @@
 
 typedef struct {
 	char url[URL_MAX];
-	http_response_t response;
+	char* response;
+	size_t response_len;
 	time_t timestamp;
 	struct CacheEntry_t *next;
 } CacheEntry_t;
