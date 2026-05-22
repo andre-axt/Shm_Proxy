@@ -5,52 +5,7 @@
 #include <ctype.h>
 #include <unistd.h>
 
-http_request_t* init_http_request(){
-        http_request_t *req = calloc(1, sizeof(http_request_t));
-        return req;
-
-}
-
-http_response_t* init_http_response(){
-        http_response_t *res = calloc(1, sizeof(http_response_t));
-        return res;
-        
-}
-
-void free_request(http_request_t *req){
-        free(req->method);
-        free(req->path);
-        free(req->query_string);
-        free(req->version);
-        for (int i = 0; i < req->header_count; i++) {
-                free(req->headers[i]);
-        }
-        free(req->headers);
-        free(req->body);
-        free(req);
-}
-
-void free_response(http_response_t *res){
-        free(res->version);
-        for (int i = 0; i < res->header_count; i++) {
-                free(res->headers[i]);
-        }
-        free(res->headers);
-        free(res->body);
-        free(res);
-}
-
-char *trim(char *str) {
-        while(isspace((unsigned char)*str)) str++;
-        if(*str == 0) return str;
-
-        char *end = str + strlen(str) - 1;
-        while(end > str && isspace((unsigned char) *end)) end--;
-        end[1] = '\0';
-        return str;
-}
-
-void parse_query_string(char *path, char **query_string, char **clean_path){
+static void parse_query_string(char *path, char **query_string, char **clean_path){
         char *qmark = strchr(path, '?');
         if(qmark) {
                 *query_string = strdup(qmark + 1);
@@ -62,38 +17,7 @@ void parse_query_string(char *path, char **query_string, char **clean_path){
        
 }
 
-int8_t parse_headers(char *buffer, char ***headers, int8_t *header_count) {
-        char *line = buffer;
-        int count = 0;
-        char **x_headers = malloc(100 * sizeof(char*));
-
-        while (*line != '\0' && count < 100){
-                char *end = strstr(line, "\r\n");
-                if (!end) break;
-                if (end == line) break;
-                int line_len = end - line;
-                x_headers[count] = strndup(line, line_len);
-                count++;
-
-                line = end + 2;
-        }
-
-        *headers = x_headers;
-        *header_count = count;
-        return 0;
-}
-
-char *get_header(char **headers, int header_count, const char *name) {
-        for (int i = 0; i < header_count; i++) {
-                if (strncasecmp(headers[i], name, strlen(name)) == 0 && headers[i][strlen(name)] == ':') {
-                        char *value = headers[i] + strlen(name) + 1; 
-                        return trim(value);
-                }
-        }
-        return NULL;
-}
-
-char *parse_chunked_body(char *chunked_data, size_t *body_length) {
+static char *parse_chunked_body(char *chunked_data, size_t *body_length) {
         char *result = NULL;
         int total_size = 0;
         char *ptr = chunked_data;
@@ -130,6 +54,84 @@ char *parse_chunked_body(char *chunked_data, size_t *body_length) {
         
         return result; 
 }
+
+static char *trim(char *str) {
+        while(isspace((unsigned char)*str)) str++;
+        if(*str == 0) return str;
+
+        char *end = str + strlen(str) - 1;
+        while(end > str && isspace((unsigned char) *end)) end--;
+        end[1] = '\0';
+        return str;
+}
+
+http_request_t* init_http_request(){
+        http_request_t *req = calloc(1, sizeof(http_request_t));
+        return req;
+
+}
+
+http_response_t* init_http_response(){
+        http_response_t *res = calloc(1, sizeof(http_response_t));
+        return res;
+        
+}
+
+void free_request(http_request_t *req){
+        free(req->method);
+        free(req->path);
+        free(req->query_string);
+        free(req->version);
+        for (int i = 0; i < req->header_count; i++) {
+                free(req->headers[i]);
+        }
+        free(req->headers);
+        free(req->body);
+        free(req);
+}
+
+void free_response(http_response_t *res){
+        free(res->version);
+        for (int i = 0; i < res->header_count; i++) {
+                free(res->headers[i]);
+        }
+        free(res->headers);
+        free(res->body);
+        free(res);
+}
+
+
+int8_t parse_headers(char *buffer, char ***headers, int8_t *header_count) {
+        char *line = buffer;
+        int count = 0;
+        char **x_headers = malloc(100 * sizeof(char*));
+
+        while (*line != '\0' && count < 100){
+                char *end = strstr(line, "\r\n");
+                if (!end) break;
+                if (end == line) break;
+                int line_len = end - line;
+                x_headers[count] = strndup(line, line_len);
+                count++;
+
+                line = end + 2;
+        }
+
+        *headers = x_headers;
+        *header_count = count;
+        return 0;
+}
+
+char *get_header(char **headers, int header_count, const char *name) {
+        for (int i = 0; i < header_count; i++) {
+                if (strncasecmp(headers[i], name, strlen(name)) == 0 && headers[i][strlen(name)] == ':') {
+                        char *value = headers[i] + strlen(name) + 1; 
+                        return trim(value);
+                }
+        }
+        return NULL;
+}
+
 
 http_request_t* request_parser(http_request_t *request, char *buffer){
         char *buffer_aux = strdup(buffer);
