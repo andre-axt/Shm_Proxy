@@ -20,7 +20,11 @@ Cache_t* init_cache(){
 	Cache_t* cache = malloc(sizeof(Cache_t));
 	cache->count = 0;
 	for (int i = 0; i < TABLE_SIZE; i++) {
-		cache->entries[i] = NULL;
+		cache->entries[i].url[0] = '\0';
+        cache->entries[i].response = NULL;
+        cache->entries[i].response_len = 0;
+        cache->entries[i].timestamp = 0;
+        cache->entries[i].next = NULL;
 	}
 
 	return cache;
