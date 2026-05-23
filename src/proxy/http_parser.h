@@ -11,7 +11,6 @@ typedef struct{
 	int8_t header_count; 
 	char *body;
 	size_t body_length;
-	char *path; //path from http_request_t
 
 } http_response_t;
 
@@ -33,6 +32,7 @@ http_response_t* init_http_response();
 void free_request(http_request_t *req);
 void free_response(http_response_t *res);
 char *get_header(char **headers, int header_count, const char *name);
+int8_t content_filtering(const char *url, http_response_t *res);
 http_response_t* response_parser(http_response_t *response, char *buffer);
 http_request_t* request_parser(http_request_t *request, char *buffer);
 

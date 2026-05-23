@@ -31,9 +31,6 @@ Cache_t* init_cache(){
 
 }
 
-int8_t content_filtering(const char *url, const char *data);
-
-
 int8_t add_cache(Cache_t *cache, const char *url, const char *data) {
     if (!cache || !url || !data) return -1;
     
