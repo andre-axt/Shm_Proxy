@@ -102,7 +102,7 @@ CacheEntry_t* find_cache(Cache_t *cache, const char *url){
 				return NULL;
 			}
 		}
-		entry = entry->next;
+		entry = (CacheEntry_t *) entry->next;
 		
 	}
 	return NULL;
