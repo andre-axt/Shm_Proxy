@@ -68,11 +68,11 @@ int8_t add_cache(Cache_t *cache, const char *url, const char *data) {
 	
    
     if (oldest_entry) {
-            entry = oldest_entry;
-            if (entry->response) {
-                free(entry->response);
-            }
-        } 
+		entry = oldest_entry;
+		if (entry->response) {
+			free(entry->response);
+		}
+    } 
 	else {
 		return -1;  
 	}
@@ -91,12 +91,12 @@ int8_t add_cache(Cache_t *cache, const char *url, const char *data) {
 
 CacheEntry_t* find_cache(Cache_t *cache, const char *url){
 	int16_t id = hash(url);
-	CacheEntry_t *entry = cache->entries[id];
-	time_t time = time(NULL);
+	CacheEntry_t *entry = &cache->entries[id];
+	time_t current_time = time(NULL);
 	for(int i = 0; i <= 4; i++){
 		if(strcmp(entry->url, url) == 0){
-			if(difftime(time, entry->timestamp) >= 600){
-				return entry->response;
+			if(difftime(current_time, entry->timestamp) >= 600){
+				return entry;
 			}
 			else{
 				return NULL;
