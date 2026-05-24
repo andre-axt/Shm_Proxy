@@ -325,6 +325,9 @@ int8_t send_buffer(Connection_t *conn, int fd) {
         if(errno == EAGAIN || errno == EWOULDBLOCK) {
             return 1; 
         }
+	else if (errno == EPIPE || errno == ECONNRESET){
+	    close(fd);
+	}
         return -1; 
     }
     else if(sent == 0){

@@ -30,6 +30,7 @@ void stop_server(int sig){
 }
 
 int main(){
+    signal(SIGPIPE, SIG_IGN);	
     signal(SIGINT, stop_server);
     server = malloc(sizeof(Socket_t));
     server->domain = AF_INET;
@@ -261,7 +262,7 @@ int main(){
 				            struct epoll_event ev;
 				            ev.data.fd = conn->client_fd;
 				            
-				            ev.events = EPOLLIN | EPOLLET; 
+				            ev.events = EPOLLIN; 
 				            epoll_ctl(epfd, EPOLL_CTL_MOD, conn->client_fd, &ev);
 
 				        }
@@ -289,7 +290,7 @@ int main(){
 				    
 				    if (sent == 0) { 
 				        struct epoll_event ev_mod;
-				        ev_mod.events = EPOLLIN | EPOLLET;
+				        ev_mod.events = EPOLLIN;
 				        ev_mod.data.fd = conn->remote_server_fd;
 				        epoll_ctl(epfd, EPOLL_CTL_MOD, conn->remote_server_fd, &ev_mod);
 				    }
