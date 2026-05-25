@@ -34,6 +34,7 @@ typedef struct {
 	int8_t	state; // 1 = STATE_WAITING_HOST, 2 = STATE_CONNECTING, 3 = STATE_CONNECTED, 4 = STATE_CLOSED
 	http_response_t *res;
 	http_request_t *req;
+    int8_t  flag; // For now, it will have this generic name, flag = 0 nothing, flag = 1 https protocol 
 } Connection_t;
 
 typedef struct {
