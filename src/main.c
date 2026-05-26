@@ -136,6 +136,14 @@ int main(){
                 if(fd == conn->client_fd && (events[i].events & EPOLLIN)){
                     if(read_socket(conn, 1) == 0){
                         if(conn->client_buffer && conn->client_buffer_len > 0){
+							if(conn->flag){
+								struct epoll_event ev_remote;
+								ev_remote.events = EPOLLIN | EPOLLOUT | EPOLLET;
+								ev_remote.data.fd = conn->remote_server_fd;
+								epoll_ctl(epfd, EPOLL_CTL_MOD, conn->remote_server_fd, &ev_remote);
+								continue;
+							}
+							
 							if(conn->state == 0){
 								
 								if(conn->req != NULL) free_request(conn->req);
@@ -193,10 +201,11 @@ int main(){
 	                                            }
 
 												char *ok_msg = "HTTP/1.1 200 Connection Established\r\n\r\n";
+												conn->flag = 1;
                                                 send(conn->client_fd, ok_msg, strlen(ok_msg), 0);
 
 												conn->client_buffer_len = 0;
-												
+
 	                                            struct epoll_event ev_remote;
 	                                            ev_remote.events = EPOLLOUT | EPOLLET;
 	                                            ev_remote.data.fd = conn->remote_server_fd;
@@ -225,7 +234,8 @@ int main(){
 	                                            } else {
 	                                                conn->state = 3;
 	                                            }
-	                                            
+												
+	                                            conn->flag = 0;
 	                                            struct epoll_event ev_remote;
 	                                            ev_remote.events = EPOLLIN | EPOLLOUT | EPOLLET;
 	                                            ev_remote.data.fd = conn->remote_server_fd;
