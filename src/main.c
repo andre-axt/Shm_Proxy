@@ -307,7 +307,7 @@ int main(){
                 }
                 else if(fd == conn->remote_server_fd && (events[i].events & EPOLLIN)) {
                     if(read_socket(conn, 2) == 0){
-						if(conn->flag) read_buffer(cache, conn, 1);
+						if(conn->flag == 0) read_buffer(cache, conn, 1);
                         if(conn->remote_server_buffer && conn->remote_server_buffer_len > 0){
 							struct epoll_event ev;
 							ev.data.fd = conn->client_fd; 
