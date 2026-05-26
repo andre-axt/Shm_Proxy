@@ -32,7 +32,8 @@ http_response_t* init_http_response();
 void free_request(http_request_t *req);
 void free_response(http_response_t *res);
 char *get_header(char **headers, int header_count, const char *name);
-int8_t content_filtering(const char *url, http_response_t *res);
+int8_t request_filter(http_request_t *req); 
+int8_t response_filter(http_response_t *res); // returns 1 if the response cannot be saved in the cache.
 http_response_t* response_parser(http_response_t *response, char *buffer);
 http_request_t* request_parser(http_request_t *request, char *buffer);
 
