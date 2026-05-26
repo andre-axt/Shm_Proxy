@@ -177,6 +177,7 @@ int8_t read_buffer(Cache_t *cache, Connection_t *conn, int8_t handler) {
 				size_t len = strlen(methods[i]);
 				if (conn->client_buffer[len] == ' ' || conn->client_buffer[len] == '\0') {
 		            conn->req = request_parser(conn->req, conn->client_buffer);
+					if(conn->req->path != NULL) conn->res->path = conn->req->path;
 					return 0; 
 			    }
 	        }
