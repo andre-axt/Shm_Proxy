@@ -161,8 +161,7 @@ int8_t read_buffer(Cache_t *cache, Connection_t *conn, int8_t handler) {
 	if(handler == 1){
 	    if (strncmp(conn->remote_server_buffer, "HTTP", 4) == 0) {
 	        conn->res = response_parser(conn->res, conn->remote_server_buffer);
-			if(conn->res->status_code != 200 || strcmp((get_header(conn->res->headers, conn->res->header_count, "Cache-control")), "public") 
-				&& get_header(conn->res->headers, conn->res->header_count, "Cache-control")){
+			if(response_filter(res)){
 				return 0;
 			} 
 			if(find_cache(cache, conn->req->path) != NULL) return 2;
