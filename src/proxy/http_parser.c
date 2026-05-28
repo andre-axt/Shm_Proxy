@@ -135,7 +135,13 @@ char *get_header(char **headers, int header_count, const char *name) {
 
 int8_t response_filter(http_response_t *res) { // simple for now
         if(res->path == NULL) return -1;
-        if(conn->res->status_code != 200 || (strcmp((get_header(conn->res->headers, conn->res->header_count, "Cache-control")), "public") != 0)){
+        if(get_header(res->headers, res->header_count, "Cache-control")) {
+                if((strcmp((get_header(res->headers, res->header_count, "Cache-control")), "public") != 0) {
+                        return 1;
+                }
+        }
+        
+        if(res->status_code != 200){
                 return 1;
         } 
         return 0;
