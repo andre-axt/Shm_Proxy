@@ -80,7 +80,8 @@ int8_t add_cache(Cache_t *cache, const char *url, const char *data) {
     entry->response_len = strlen(data);
     entry->timestamp = time(NULL);
     entry->next = NULL;  
-    
+    char *msg = "Add - response in the cache";
+    write(1, msg, 28);
     cache->count++;
     return 0;
 }
@@ -93,6 +94,8 @@ CacheEntry_t* find_cache(Cache_t *cache, const char *url){
 	for(int i = 0; i <= 4; i++){
 		if(strcmp(entry->url, url) == 0){
 			if(difftime(current_time, entry->timestamp) >= 600){
+				char *msg = "Success - find cache";
+    			write(1, msg, 21);
 				return entry;
 			}
 			else{
