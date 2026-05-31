@@ -161,7 +161,7 @@ int8_t read_buffer(Cache_t *cache, Connection_t *conn, int8_t handler) {
 	if(handler == 1){
 	    if (strncmp(conn->remote_server_buffer, "HTTP", 4) == 0) {
 	        conn->res = response_parser(conn->res, conn->remote_server_buffer);
-			if(response_filter(res)){
+			if(response_filter(conn->res)){
 				return 0;
 			} 
 			if(find_cache(cache, conn->req->path) != NULL) return 2;
