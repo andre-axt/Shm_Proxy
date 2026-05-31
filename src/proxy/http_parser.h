@@ -11,7 +11,7 @@ typedef struct{
 	int8_t header_count; 
 	char *body;
 	size_t body_length;
-
+	char *path; //from http_request_t
 } http_response_t;
 
 typedef struct{
