@@ -133,10 +133,10 @@ char *get_header(char **headers, int header_count, const char *name) {
         return NULL;
 }
 
-int8_t response_filter(http_response_t *res) { // simple for now
+int8_t response_filter(http_response_t *res) { 
         if(res->path == NULL) return -1;
         if(get_header(res->headers, res->header_count, "Cache-control")) {
-                if((strcmp((get_header(res->headers, res->header_count, "Cache-control")), "public") != 0) {
+                if(strcmp((get_header(res->headers, res->header_count, "Cache-control")), "public") != 0) {
                         return 1;
                 }
         }
