@@ -144,7 +144,7 @@ int main(){
                         if(conn->client_buffer && conn->client_buffer_len > 0){
 							if(conn->flag){
 								struct epoll_event ev_remote;
-								ev_remote.events = EPOLLIN | EPOLLOUT | EPOLLET;
+								ev_remote.events = EPOLLIN | EPOLLOUT;
 								ev_remote.data.fd = conn->remote_server_fd;
 								epoll_ctl(epfd, EPOLL_CTL_MOD, conn->remote_server_fd, &ev_remote);
 								continue;
@@ -168,7 +168,7 @@ int main(){
 									if (entry != NULL) {
 										send(conn->client_fd, entry->response, entry->response_len, 0);
 										struct epoll_event ev_remote;
-										ev_remote.events = EPOLLIN | EPOLLOUT | EPOLLET;
+										ev_remote.events = EPOLLIN | EPOLLOUT;
 										ev_remote.data.fd = conn->remote_server_fd;
 										epoll_ctl(epfd, EPOLL_CTL_ADD, conn->remote_server_fd, &ev_remote);
 										
@@ -220,7 +220,7 @@ int main(){
 												conn->client_buffer_len = 0;
 
 	                                            struct epoll_event ev_remote;
-	                                            ev_remote.events = EPOLLOUT | EPOLLET;
+	                                            ev_remote.events = EPOLLOUT;
 	                                            ev_remote.data.fd = conn->remote_server_fd;
 	                                            epoll_ctl(epfd, EPOLL_CTL_ADD, conn->remote_server_fd, &ev_remote);
 	                                        }
@@ -250,7 +250,7 @@ int main(){
 												
 	                                            conn->flag = 0;
 	                                            struct epoll_event ev_remote;
-	                                            ev_remote.events = EPOLLIN | EPOLLOUT | EPOLLET;
+	                                            ev_remote.events = EPOLLIN | EPOLLOUT;
 	                                            ev_remote.data.fd = conn->remote_server_fd;
 	                                            epoll_ctl(epfd, EPOLL_CTL_ADD, conn->remote_server_fd, &ev_remote);
 	                                        }
@@ -260,7 +260,7 @@ int main(){
                             }
 							else if(conn->state >= 2){
 								struct epoll_event ev_remote;
-								ev_remote.events = EPOLLIN | EPOLLOUT | EPOLLET;
+								ev_remote.events = EPOLLIN | EPOLLOUT;
 								ev_remote.data.fd = conn->remote_server_fd;
 								epoll_ctl(epfd, EPOLL_CTL_MOD, conn->remote_server_fd, &ev_remote);
 							}
@@ -324,7 +324,7 @@ int main(){
                         if(conn->remote_server_buffer && conn->remote_server_buffer_len > 0){
 							struct epoll_event ev;
 							ev.data.fd = conn->client_fd; 
-							ev.events = EPOLLIN | EPOLLOUT | EPOLLET; 
+							ev.events = EPOLLIN | EPOLLOUT; 
 							
 							epoll_ctl(epfd, EPOLL_CTL_MOD, conn->client_fd, &ev);							
                         }
