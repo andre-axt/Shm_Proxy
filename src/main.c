@@ -154,6 +154,10 @@ int main(){
 								
 								if(conn->req != NULL) conn->req = free_request(conn->req);
 								conn->req = init_http_request();
+								
+								if(conn->res != NULL) conn->res = free_response(conn->res);
+								conn->res = init_http_response();
+
 	                            int result = read_buffer(cache, conn, 2);
 	                            
 	                            if(result == 1) {

@@ -70,7 +70,7 @@ int8_t add_cache(Cache_t *cache, const char *url, const char *data) {
 		entry = oldest_entry;
 		if (entry->response) {
 			free(entry->response);
-			current->response = NULL;
+			entry->response = NULL;
 		}
     } 
 	else {
@@ -94,7 +94,7 @@ CacheEntry_t* find_cache(Cache_t *cache, const char *url){
 	int16_t id = hash(url);
 	CacheEntry_t *entry = &cache->entries[id];
 	time_t current_time = time(NULL);
-	for(int i = 0; i <= 4; i++){
+	for(int i = 0; i <= 4 && entry != NULL; i++){
 		if(strcmp(entry->url, url) == 0){
 			if(difftime(current_time, entry->timestamp) >= 600){
 				char *msg = "Success - find cache";
