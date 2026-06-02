@@ -17,8 +17,10 @@ void stop_server(int sig){
     if(server && server->socket_fd != -1){
         close(server->socket_fd);
         free(server);
+		server = NULL;
     } else if(server != NULL){
         free(server);
+		server = NULL;
     }
     if(epfd != -1){
         close(epfd);
@@ -46,6 +48,7 @@ int main(){
     switch(create_server(server)){
         case -1: {
             free(server);
+			server = NULL;
             char *msg = "Error - socket create failed\n";
             write(1, msg, 29);
             return 1;
@@ -53,6 +56,7 @@ int main(){
         case 1: {
             close(server->socket_fd);
             free(server);
+			server = NULL;
             char *msg = "Error - bind socket failed\n";
             write(1, msg, 27);
             return 1;
@@ -62,6 +66,7 @@ int main(){
     if(set_nonblocking(server->socket_fd)){
         close(server->socket_fd);
         free(server);
+		server = NULL;
         char *msg = "Error - set nonblocking failed\n";
         write(1, msg, 31);
         return 1;
@@ -71,6 +76,7 @@ int main(){
     if(start_listen(server)){
         close(server->socket_fd);
         free(server);
+		server = NULL;
         char *msg = "Error - listen socket failed\n";
         write(1, msg, 29);
         return 1;
