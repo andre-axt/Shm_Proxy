@@ -48,6 +48,7 @@ int8_t add_cache(Cache_t *cache, const char *url, const char *data) {
 
             if (current->response) {
                 free(current->response);
+				current->response = NULL;
             }
             current->response = strdup(data); 
             current->response_len = strlen(data);
@@ -69,6 +70,7 @@ int8_t add_cache(Cache_t *cache, const char *url, const char *data) {
 		entry = oldest_entry;
 		if (entry->response) {
 			free(entry->response);
+			current->response = NULL;
 		}
     } 
 	else {
