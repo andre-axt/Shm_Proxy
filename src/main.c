@@ -152,7 +152,7 @@ int main(){
 							
 							if(conn->state == 0){
 								
-								if(conn->req != NULL) free_request(conn->req);
+								if(conn->req != NULL) conn->req = free_request(conn->req);
 								conn->req = init_http_request();
 	                            int result = read_buffer(cache, conn, 2);
 	                            
