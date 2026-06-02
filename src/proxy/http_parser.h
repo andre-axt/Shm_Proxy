@@ -29,8 +29,8 @@ typedef struct{
 
 http_request_t* init_http_request();
 http_response_t* init_http_response();
-void free_request(http_request_t *req);
-void free_response(http_response_t *res);
+http_request_t* free_request(http_request_t *req);
+http_response_t* free_response(http_response_t *res);
 char *get_header(char **headers, int header_count, const char *name);
 int8_t request_filter(http_request_t *req); 
 int8_t response_filter(http_response_t *res); // returns 1 if the response cannot be saved in the cache.
