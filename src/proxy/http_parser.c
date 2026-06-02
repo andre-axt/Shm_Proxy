@@ -98,7 +98,8 @@ http_response_t* init_http_response(){
         
 }
 
-void free_request(http_request_t *req){
+http_request_t* free_request(http_request_t *req){
+        if(req == NULL) return NULL;
         free(req->method);
         free(req->path);
         free(req->query_string);
@@ -109,9 +110,11 @@ void free_request(http_request_t *req){
         free(req->headers);
         free(req->body);
         free(req);
+        return NULL;
 }
 
-void free_response(http_response_t *res){
+free_response_t* free_response(http_response_t *res){
+        if(res == NULL) return NULL;
         free(res->version);
         for (int i = 0; i < res->header_count; i++) {
                 free(res->headers[i]);
@@ -119,9 +122,8 @@ void free_response(http_response_t *res){
         free(res->headers);
         free(res->body);
         free(res);
+        return NULL;
 }
-
-
 
 char *get_header(char **headers, int header_count, const char *name) {
         for (int i = 0; i < header_count; i++) {
