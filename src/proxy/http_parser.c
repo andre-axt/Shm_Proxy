@@ -113,7 +113,7 @@ http_request_t* free_request(http_request_t *req){
         return NULL;
 }
 
-free_response_t* free_response(http_response_t *res){
+http_response_t* free_response(http_response_t *res){
         if(res == NULL) return NULL;
         free(res->version);
         for (int i = 0; i < res->header_count; i++) {
