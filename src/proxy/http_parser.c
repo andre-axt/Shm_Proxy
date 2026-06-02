@@ -222,7 +222,9 @@ http_request_t* request_parser(http_request_t *request, char *buffer){
 }
 
 http_response_t* response_parser(http_response_t* response, char *buffer){
-    if(!buffer || !response) return response;
+    if(!buffer) return response;
+
+    if(!response) response = init_http_response();
     
     char *buffer_aux = strdup(buffer);
     if(!buffer_aux) return response;

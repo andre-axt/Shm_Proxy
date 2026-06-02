@@ -108,7 +108,7 @@ int8_t read_socket(Connection_t *conn, int8_t handler){
 
 			conn->client_buffer = new_buffer;
 	    }
-		conn->client_buffer[conn->client_buffer_len + 1] = '\0';
+		conn->client_buffer[conn->client_buffer_len] = '\0';
 		return 0;
 	}
 	if(handler == 2){
@@ -160,7 +160,7 @@ int8_t read_socket(Connection_t *conn, int8_t handler){
 
 			conn->remote_server_buffer = new_buffer;
 		}
-		conn->remote_server_buffer[conn->remote_server_buffer_len + 1] = '\0';
+		conn->remote_server_buffer[conn->remote_server_buffer_len] = '\0';
 		return 0;
 	}
 
@@ -373,9 +373,11 @@ void remove_connection(ConnectionManager_t *manager, int index) {
 		conn->remote_server_fd = -1;
 
 	}
-	
 	conn->client_buffer_len = 0;
 	conn->remote_server_buffer_len = 0;
 	conn->state = 0;
 	manager->act_conn--;
+
+	if(conn->req) conn->req = free_request(conn->req);
+	if(conn->res) conn->res = free_response(conn->res);
 }
