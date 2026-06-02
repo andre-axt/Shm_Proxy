@@ -133,7 +133,7 @@ int main(){
                 int fd = events[i].data.fd;
                 Connection_t *conn = find_connection_by_fd(conn_manager, fd);
 
-                if(conn == NULL){
+                if(conn == NULL || conn->client_fd == -1) {
                     char *msg = "Error - find connection by fd failed\n";
                     write(1, msg, 36);
                     continue;    
@@ -161,11 +161,14 @@ int main(){
 	                            }
 								if(result == 2) {
 									CacheEntry_t *entry = find_cache(cache, conn->req->path);
-									send(conn->client_fd, entry->response, entry->response_len, 0);
-									struct epoll_event ev_remote;
-									ev_remote.events = EPOLLIN | EPOLLOUT | EPOLLET;
-									ev_remote.data.fd = conn->remote_server_fd;
-									epoll_ctl(epfd, EPOLL_CTL_ADD, conn->remote_server_fd, &ev_remote);
+									if (entry != NULL) {
+										send(conn->client_fd, entry->response, entry->response_len, 0);
+										struct epoll_event ev_remote;
+										ev_remote.events = EPOLLIN | EPOLLOUT | EPOLLET;
+										ev_remote.data.fd = conn->remote_server_fd;
+										epoll_ctl(epfd, EPOLL_CTL_ADD, conn->remote_server_fd, &ev_remote);
+										
+									}
 								}
 	                            else{  
 	                                if(conn->req && conn->req->method && 
