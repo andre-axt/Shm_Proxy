@@ -96,7 +96,7 @@ CacheEntry_t* find_cache(Cache_t *cache, const char *url){
 	time_t current_time = time(NULL);
 	for(int i = 0; i <= 4 && entry != NULL; i++){
 		if(strcmp(entry->url, url) == 0){
-			if(difftime(current_time, entry->timestamp) >= 600){
+			if(difftime(current_time, entry->timestamp) <= 600){
 				char *msg = "Success - find cache";
     			write(1, msg, 21);
 				return entry;
