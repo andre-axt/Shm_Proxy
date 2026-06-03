@@ -298,12 +298,6 @@ int main(){
 				    }
 
 				    int8_t sent = send_buffer(conn, conn->remote_server_fd);
-				    if (sent == 1) {
-				        struct epoll_event ev_client;
-				        ev_client.events = EPOLLONESHOT;
-				        ev_client.data.fd = conn->client_fd;
-				        epoll_ctl(epfd, EPOLL_CTL_MOD, conn->client_fd, &ev_client);
-				    }
 
 					if (sent == -1) {
                         int idx = find_idx_by_fd(conn_manager, fd);
