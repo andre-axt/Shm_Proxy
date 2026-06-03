@@ -217,8 +217,8 @@ int main(){
 												size_t msg_len = strlen(ok_msg);
 												if (conn->remote_server_buffer_cap < msg_len) {
 													char* relocated_msg = realloc(conn->remote_server_buffer, msg_len);
-												    if(realocated_msg != NULL) { 
-														conn->remote_server_buffer = realocated_msg;
+												    if(relocated_msg != NULL) { 
+														conn->remote_server_buffer = relocated_msg;
 													    conn->remote_server_buffer_cap = msg_len;
 													} else {
 														continue;
