@@ -161,7 +161,11 @@ int main(){
                                 continue;
 							}
 							
-							if(conn->state == 0){
+							if (conn->state == 0){
+
+								if (strstr(conn->client_buffer, "\r\n\r\n") == NULL) {
+        							continue; 
+    							}	
 								
 								if(conn->req != NULL) conn->req = free_request(conn->req);
 								conn->req = init_http_request();
@@ -311,7 +315,7 @@ int main(){
 				}
 
                 else if(fd == conn->remote_server_fd && (events[i].events & EPOLLOUT)) {
-                    if (conn->state == 2) { 
+                    if (conn->state == 2 || (conn->state == 3 && conn->flag == 0)) { 
         				conn->state = 3;
         
 		        		if (conn->req && conn->req->method && strcmp(conn->req->method, "CONNECT") == 0 && conn->flag == 0) {
@@ -324,15 +328,15 @@ int main(){
 		                    				conn->remote_server_buffer = relocated_msg;
 		                    				conn->remote_server_buffer_cap = msg_len;
 		                			}
-		            			}
-		            			memcpy(conn->remote_server_buffer, ok_msg, msg_len);
-		            			conn->remote_server_buffer_len = msg_len;
-		            			conn->flag = 1;
-		
-		            			struct epoll_event ev_client;
-		            			ev_client.events = EPOLLIN | EPOLLOUT;
-		            			ev_client.data.fd = conn->client_fd;
-		            			epoll_ctl(epfd, EPOLL_CTL_MOD, conn->client_fd, &ev_client);
+							}
+							memcpy(conn->remote_server_buffer, ok_msg, msg_len);
+							conn->remote_server_buffer_len = msg_len;
+							conn->flag = 1;
+	
+							struct epoll_event ev_client;
+							ev_client.events = EPOLLIN | EPOLLOUT;
+							ev_client.data.fd = conn->client_fd;
+							epoll_ctl(epfd, EPOLL_CTL_MOD, conn->client_fd, &ev_client);
 		        		}
     		   		}		
 
