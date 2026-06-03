@@ -82,7 +82,7 @@ int8_t read_socket(Connection_t *conn, int8_t handler){
 				total_read += bytes_read;
 				continue;
 			} else if (bytes_read == 0) {
-				break;
+				return -1;
 			}
 			else {
 				if(errno == EAGAIN || errno == EWOULDBLOCK) {
@@ -136,7 +136,7 @@ int8_t read_socket(Connection_t *conn, int8_t handler){
 				total_read += bytes_read;
 				continue;
 			} else if (bytes_read == 0) {
-				break;
+				return -1;
 			}
 			else {
 				if(errno == EAGAIN || errno == EWOULDBLOCK) {

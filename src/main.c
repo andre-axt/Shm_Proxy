@@ -222,27 +222,12 @@ int main(){
 	                                                conn->state = 3;  
 	                                            }
 
-												char *ok_msg = "HTTP/1.1 200 Connection Established\r\n\r\n";
-												size_t msg_len = strlen(ok_msg);
-												
-												struct epoll_event ev_remote;
+						    struct epoll_event ev_remote;
 	                                            ev_remote.events = EPOLLIN | EPOLLOUT;
 	                                            ev_remote.data.fd = conn->remote_server_fd;
 	                                            epoll_ctl(epfd, EPOLL_CTL_ADD, conn->remote_server_fd, &ev_remote);
 												
-												if (conn->remote_server_buffer_cap < msg_len) {
-													char* relocated_msg = realloc(conn->remote_server_buffer, msg_len);
-												    if(relocated_msg != NULL) { 
-														conn->remote_server_buffer = relocated_msg;
-													    conn->remote_server_buffer_cap = msg_len;
-													} else {
-														continue;
-													}
-												}
-												
-												memcpy(conn->remote_server_buffer, ok_msg, msg_len);
-												conn->remote_server_buffer_len = msg_len;
-												conn->flag = 1;
+						    conn->flag = 1;
 
 	                                            struct epoll_event ev_client;
 	                                            ev_client.events = EPOLLIN | EPOLLOUT;
@@ -257,7 +242,7 @@ int main(){
 	                                    if(host){
 	                                        char *ip = get_ip_from_host(host);
 	                                        if(ip) {
-	                                            struct sockaddr_in remote_addr;
+	                                            struct socddkaddr_in remote_addr;
 	                                            remote_addr.sin_family = AF_INET;
 	                                            remote_addr.sin_addr.s_addr = inet_addr(ip);
 	                                            remote_addr.sin_port = htons(80);
@@ -292,6 +277,13 @@ int main(){
 							}
                         }
                     }
+		    else{
+                        int idx = find_idx_by_fd(conn_manager, fd);
+                        if(idx != -1) remove_connection(conn_manager, idx);
+                        continue;
+
+                    }
+
                 }
 				else if(fd == conn->client_fd && (events[i].events & EPOLLOUT)) {
 					int8_t sent = send_buffer(conn, conn->client_fd);
@@ -323,8 +315,29 @@ int main(){
 
                 else if(fd == conn->remote_server_fd && (events[i].events & EPOLLOUT)) {
                     if (conn->state == 2) { 
-				        conn->state = 3;
-				    }
+        		conn->state = 3;
+        
+        		if (conn->req && conn->req->method && strcmp(conn->req->method, "CONNECT") == 0 && conn->flag == 0) {
+            			char *ok_msg = "HTTP/1.1 200 Connection Established\r\n\r\n";
+            			size_t msg_len = strlen(ok_msg);
+            
+           		 	if (conn->remote_server_buffer_cap < msg_len) {
+                			char* relocated_msg = realloc(conn->remote_server_buffer, msg_len);
+                			if(relocated_msg != NULL) { 
+                    				conn->remote_server_buffer = relocated_msg;
+                    				conn->remote_server_buffer_cap = msg_len;
+                			}
+            			}
+            			memcpy(conn->remote_server_buffer, ok_msg, msg_len);
+            			conn->remote_server_buffer_len = msg_len;
+            			conn->flag = 1;
+
+            			struct epoll_event ev_client;
+            			ev_client.events = EPOLLIN | EPOLLOUT;
+            			ev_client.data.fd = conn->client_fd;
+            			epoll_ctl(epfd, EPOLL_CTL_MOD, conn->client_fd, &ev_client);
+        		}
+    		   }		
 
 				    int8_t sent = send_buffer(conn, conn->remote_server_fd);
 
@@ -365,7 +378,12 @@ int main(){
                             }
                             epoll_ctl(epfd, EPOLL_CTL_MOD, conn->client_fd, &ev);						
                         }
-                    }
+                    } else{
+		    	int idx = find_idx_by_fd(conn_manager, fd);
+    			if(idx != -1) remove_connection(conn_manager, idx);
+    			continue;
+		    
+		    }
                 }
                 else if(events[i].events & (EPOLLHUP | EPOLLERR)) {
                     int idx = find_idx_by_fd(conn_manager, fd);
