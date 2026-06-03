@@ -214,15 +214,25 @@ int main(){
 	                                            }
 
 												char *ok_msg = "HTTP/1.1 200 Connection Established\r\n\r\n";
+												size_t msg_len = strlen(ok_msg);
+												if (conn->remote_server_buffer_cap < msg_len) {
+													char* relocated_msg = realloc(conn->remote_server_buffer, msg_len);
+												    if(realocated_msg != NULL) { 
+														conn->remote_server_buffer = realocated_msg;
+													    conn->remote_server_buffer_cap = msg_len;
+													} else {
+														continue;
+													}
+												}
+												
+												memcpy(conn->remote_server_buffer, ok_msg, msg_len);
+												conn->remote_server_buffer_len = msg_len;
 												conn->flag = 1;
-                                                send(conn->client_fd, ok_msg, strlen(ok_msg), 0);
 
-												conn->client_buffer_len = 0;
-
-	                                            struct epoll_event ev_remote;
-	                                            ev_remote.events = EPOLLOUT;
-	                                            ev_remote.data.fd = conn->remote_server_fd;
-	                                            epoll_ctl(epfd, EPOLL_CTL_ADD, conn->remote_server_fd, &ev_remote);
+	                                            struct epoll_event ev_client;
+	                                            ev_client.events = EPOLLOUT;
+	                                            ev_client.data.fd = conn->client_fd;
+	                                            epoll_ctl(epfd, EPOLL_CTL_ADD, conn->client_fd, &ev_client);
 	                                        }
 	                                    }
 	                                }
@@ -268,28 +278,31 @@ int main(){
                     }
                 }
 				else if(fd == conn->client_fd && (events[i].events & EPOLLOUT)) {
-					if(conn->remote_server_buffer_len > 0) {
+					int8_t sent = send_buffer(conn, conn->client_fd);
+					if(sent == -1){
+						int idx = find_idx_by_fd(conn_manager, conn->client_fd);
+						if(idx != -1) remove_connection(conn_manager, idx);
+						continue;
+					}
+					if(sent == 0 && conn->remote_server_buffer_len == 0) {
+						struct epoll_event ev;
 
-				        int8_t sent = send_buffer(conn, conn->client_fd);
-				        while(sent == 1){
-				            sent = send_buffer(conn, conn->client_fd);
-				        }
+			            ev.events = EPOLLIN;
+			            ev.data.fd = conn->client_fd;
+			            epoll_ctl(epfd, EPOLL_CTL_MOD, conn->client_fd, &ev);
+			            
+			            ev.events = EPOLLIN;
+			            ev.data.fd = conn->remote_server_fd;
+			            epoll_ctl(epfd, EPOLL_CTL_MOD, conn->remote_server_fd, &ev);
+			            
+			            conn->flag = 2; 
+			        } else {
+			            struct epoll_event ev_mod;
+			            ev_mod.events = EPOLLIN;
+			            ev_mod.data.fd = conn->client_fd;
+			            epoll_ctl(epfd, EPOLL_CTL_MOD, conn->client_fd, &ev_mod);
+			        }	
 				        
-				        if(sent == -1){
-				            int idx = find_idx_by_fd(conn_manager, conn->client_fd);
-				            if(idx != -1) remove_connection(conn_manager, idx);
-				            continue;
-				        }
-				        
-				        if(conn->remote_server_buffer_len == 0) {
-				            struct epoll_event ev;
-				            ev.data.fd = conn->client_fd;
-				            
-				            ev.events = EPOLLIN; 
-				            epoll_ctl(epfd, EPOLL_CTL_MOD, conn->client_fd, &ev);
-
-				        }
-				    }
 				}
 
                 else if(fd == conn->remote_server_fd && (events[i].events & EPOLLOUT)) {
