@@ -301,7 +301,7 @@ int main(){
 						continue;
 					}
 					if(sent == 0 && conn->remote_server_buffer_len == 0) {
-						If(conn->flag == 1) conn->flag = 2;
+						if(conn->flag == 1) conn->flag = 2;
 						
 						struct epoll_event ev;
 			            ev.events = EPOLLIN;
