@@ -191,8 +191,23 @@ int main(){
 								}
 	                            else {  
 	                                if(conn->req && conn->req->method && strcmp(conn->req->method, "CONNECT") == 0) {
+										char *headers_end = strstr(conn->client_buffer, "\r\n\r\n");
+									    if (headers_end) {
+									        headers_end += 4; 
+									        size_t headers_len = headers_end - conn->client_buffer;
+									        
+									        if (conn->client_buffer_len > headers_len) {
+									            size_t remaining = conn->client_buffer_len - headers_len;
+									            memmove(conn->client_buffer, headers_end, remaining);
+									            conn->client_buffer_len = remaining;
+									        } else {
+									            conn->client_buffer_len = 0;
+									        }
+									    } else {
+									        conn->client_buffer_len = 0;
+									    }
+										
 	                                    char *host_port = conn->req->path;
-										conn->client_buffer_len = 0;
 	                                    if(host_port) {
 	                                        char hostname[256];
 	                                        int port = 443;  
@@ -315,6 +330,13 @@ int main(){
 				}
 
                 else if(fd == conn->remote_server_fd && (events[i].events & EPOLLOUT)) {
+					int error = 0;
+				    socklen_t errlen = sizeof(error);
+				    if (getsockopt(fd, SOL_SOCKET, SO_ERROR, (void *)&error, &errlen) < 0 || error != 0) {
+				        int idx = find_idx_by_fd(conn_manager, fd);
+				        if(idx != -1) remove_connection(conn_manager, idx);
+				        continue;
+				    }
                     if (conn->state == 2 || (conn->state == 3 && conn->flag == 0)) { 
         				conn->state = 3;
         
