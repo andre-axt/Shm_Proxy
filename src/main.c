@@ -188,6 +188,7 @@ int main(){
 	                            else {  
 	                                if(conn->req && conn->req->method && strcmp(conn->req->method, "CONNECT") == 0) {
 	                                    char *host_port = conn->req->path;
+										conn->client_buffer_len = 0;
 	                                    if(host_port) {
 	                                        char hostname[256];
 	                                        int port = 443;  
@@ -201,7 +202,8 @@ int main(){
 	                                                port = atoi(colon + 1);
 	                                            }
 	                                        } else {
-	                                            strcpy(hostname, host_port);
+	                                            strncpy(hostname, host_port, 255);
+												hostname[255] = '\0';
 	                                        }
 	                                        
 	                                        char *ip = get_ip_from_host(hostname);
@@ -237,7 +239,7 @@ int main(){
 	                                    if(host){
 	                                        char *ip = get_ip_from_host(host);
 	                                        if(ip) {
-	                                            struct socddkaddr_in remote_addr;
+	                                            struct sockaddr_in remote_addr;
 	                                            remote_addr.sin_family = AF_INET;
 	                                            remote_addr.sin_addr.s_addr = inet_addr(ip);
 	                                            remote_addr.sin_port = htons(80);
