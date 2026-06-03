@@ -287,7 +287,7 @@ Connection_t* add_client_connection(ConnectionManager_t *manager, int client_fd)
 			manager->act_conn++;
 
 			struct epoll_event ev;
-            ev.events = EPOLLIN | EPOLLET;
+            ev.events = EPOLLIN;
             ev.data.fd = client_fd;
 
 			epoll_ctl(manager->epoll_fd, EPOLL_CTL_ADD, client_fd, &ev);
