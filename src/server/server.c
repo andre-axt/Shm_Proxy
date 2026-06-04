@@ -191,15 +191,22 @@ int8_t read_buffer(Cache_t *cache, Connection_t *conn, int8_t handler) {
 	if(handler > 2 || handler < 1) return -1;
 	
 	if(handler == 1){
-	    if (strncmp(conn->remote_server_buffer, "HTTP", 4) == 0) {
-	        conn->res = response_parser(conn->res, conn->remote_server_buffer);
-			if(response_filter(conn->res)){
-				return 0;
-			} 
-			if(find_cache(cache, conn->req->path) != NULL) return 2;
-			add_cache(cache, conn->req->path, conn->remote_server_buffer);
-	        return 0;
-	    }
+	    if (!conn->res) conn->res = init_http_response();
+		if (!conn->res->version) {
+			conn->res = response_parser(conn->res, conn->remote_server_buffer);
+			if (!conn->res->version) return 1;
+		}
+
+		if (is_response_complete(conn)) {
+			if (response_filter(conn->res) == 0) {
+				if (find_cache(cache, conn->req->path) == NULL) {
+					add_cache(cache, conn->req->path, conn->remote_server_buffer);
+				}
+				return 2;
+			}
+			return 0;	
+		}
+		return 1;
 		
 	}
 	else{
@@ -209,14 +216,21 @@ int8_t read_buffer(Cache_t *cache, Connection_t *conn, int8_t handler) {
 				if (conn->client_buffer[len] == ' ' || conn->client_buffer[len] == '\0') {
 		            conn->req = request_parser(conn->req, conn->client_buffer);
 					if(conn->req->path != NULL) conn->res->path = conn->req->path;
+
+					CacheEntry_t *entry = find_cache(cache, conn->req->path);
+                    if (entry != NULL) {
+                        send(conn->client_fd, entry->response, entry->response_len, 0);
+                        conn->state = 4; 
+                        return 2; 
+                    }
 					return 0; 
 			    }
 	        }
 	    }
+    	return -1; 
 		
 	}
 
-    return 1; 
 }
 
 char* get_ip_from_host(const char* hostname){
@@ -357,9 +371,6 @@ int8_t send_buffer(Connection_t *conn, int fd) {
         if(errno == EAGAIN || errno == EWOULDBLOCK) {
             return 1; 
         }
-	else if (errno == EPIPE || errno == ECONNRESET){
-	    close(fd);
-	}
         return -1; 
     }
     else if(sent == 0){
