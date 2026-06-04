@@ -100,27 +100,22 @@ int main(){
                 int client_fd = accept(server->socket_fd, (struct sockaddr*)&client_addr, &addr_len);
 
                 if(client_fd > 0) {
-					char ip_str[INET_ADDRSTRLEN];
-					inet_ntop(AF_INET, &(client_addr.sin_addr), ip_str, INET_ADDRSTRLEN);
 					set_nonblocking(client_fd);
-					Connection_t *conn = add_client_connection(conn_manager, client_fd);
-					if(conn == NULL) {
-						char *msg = "Error - add client to epoll failed\n";
-						write(1, msg, 35);
-						close(client_fd);
-						continue; 
-					}
-					
-					conn->remote_server_fd = socket(AF_INET, SOCK_STREAM, 0);
-					if(conn->remote_server_fd < 0) {
-						int idx = find_idx_by_fd(conn_manager, client_fd);
-						if(idx != -1) {
-							remove_connection(conn_manager, idx);
-						}
-						continue;
-					}
-					
-					set_nonblocking(conn->remote_server_fd);
+                    Connection_t *conn = add_client_connection(conn_manager, client_fd);
+                    if(conn == NULL) {
+                        char *msg = "Error - add client to epoll failed\n";
+                        write(1, msg, 35);
+                        close(client_fd);
+                        continue; 
+                    }
+                    
+                    conn->remote_server_fd = socket(AF_INET, SOCK_STREAM, 0);
+                    if(conn->remote_server_fd < 0) {
+                        int idx = find_idx_by_fd(conn_manager, client_fd);
+                        if(idx != -1) remove_connection(conn_manager, idx);
+                        continue;
+                    }
+                    set_nonblocking(conn->remote_server_fd);
                 }
             }
             else {
