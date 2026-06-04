@@ -173,7 +173,7 @@ int8_t is_response_complete(Connection_t *conn) {
 	char *cl = get_header(conn->res->headers, conn->res->header_count, "Content-Length");
 	if (cl) {
 		long len = atol(cl);
-		return (conn->remote_server_buffer_len >= (size_t)len;
+		return (conn->remote_server_buffer_len >= (size_t)len);
 	}
 
 	char *te = get_header(conn->res->headers, conn->res->header_count, "Transfer-Encoding");
