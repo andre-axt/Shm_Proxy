@@ -167,6 +167,24 @@ int8_t read_socket(Connection_t *conn, int8_t handler){
 	return -1;
 }
 
+int8_t is_response_complete(Connection_t *conn) {
+	if (!conn->res) return 0;
+
+	char *cl = get_header(conn->res->headers, conn->res->header_count, "Content-Length");
+	if (cl) {
+		long len = atol(cl);
+		return (conn->remote_server_buffer_len >= (size_t)len;
+	}
+
+	char *te = get_header(conn->res->headers, conn->res->header_count, "Transfer-Encoding");
+	if (te && strcasestr(te, "chunked")) {
+		size_t len = conn->remote_server_buffer_len;
+        if (len >= 5 && memcmp(conn->remote_server_buffer + len - 5, "0\r\n\r\n", 5) == 0) return 1;
+		return 0;
+	}
+	return 0;
+}
+
 int8_t read_buffer(Cache_t *cache, Connection_t *conn, int8_t handler) {
     const char *methods[] = {"GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS", "CONNECT"};
     int8_t num_methods = sizeof(methods) / sizeof(methods[0]);
