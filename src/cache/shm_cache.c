@@ -19,6 +19,7 @@ uint16_t hash(const char *url){
 
 Cache_t* init_cache(){
 	Cache_t* cache = malloc(sizeof(Cache_t));
+	if (!cache) return NULL;
 	cache->count = 0;
 	for (int i = 0; i < TABLE_SIZE; i++) {
 		cache->entries[i].url[0] = '\0';
@@ -36,57 +37,76 @@ int8_t add_cache(Cache_t *cache, const char *url, const char *data) {
     if (!cache || !url || !data) return -1;
     
     uint16_t id = hash(url);
-    CacheEntry_t *entry = &cache->entries[id]; 
+    CacheEntry_t *head = &cache->entries[id]; 
     
-    uint8_t aux = 0;
-    CacheEntry_t *oldest_entry = NULL;
-    time_t oldest_time = time(NULL);
-
-    CacheEntry_t *current = entry;
-    while (current && aux < 4) {  
-        if (strcmp(current->url, url) == 0) {
-
-            if (current->response) {
-                free(current->response);
-				current->response = NULL;
-            }
-            current->response = strdup(data); 
-            current->response_len = strlen(data);
-            current->timestamp = time(NULL);
-            return 0;
-        }
-        
-        if (current->timestamp < oldest_time) {
-            oldest_time = current->timestamp;
-            oldest_entry = current;
-        }
-        
-        aux++;
-        current = (CacheEntry_t*)current->next;
-    }
-	
-   
-    if (oldest_entry) {
-		entry = oldest_entry;
-		if (entry->response) {
-			free(entry->response);
-			entry->response = NULL;
+    CacheEntry_t *prev = NULL;
+	CacheEntry_t *curr = head;
+	while (curr) {
+		if (strcmp(curr->url, url) == 0) {
+			if (curr->response) free(curr->response);
+			curr->response = strdup(data);
+			curr->response_len = strlen(data);
+			curr->timestamp = time(NULL);
+			return 0;
 		}
-    } 
-	else {
-		return -1;  
+		prev = curr;
+		curr = curr->next;
 	}
-    
-    strncpy(entry->url, url, URL_MAX - 1);
-    entry->url[URL_MAX - 1] = '\0';
-    entry->response = strdup(data);
-    entry->response_len = strlen(data);
-    entry->timestamp = time(NULL);
-    entry->next = NULL;  
-    char *msg = "Add - response in the cache";
-    write(1, msg, 28);
-    cache->count++;
-    return 0;
+
+	time_t now = time(NULL);
+	CacheEntry_t *oldest = NULL;
+	CacheEntry_t *oldest_prev = NULL;
+	curr = head;
+	prev = NULL;
+	while (curr) {
+		if (difftime(now, curr->timestamp) > 600) {
+			if (curr->response) free(curr->response);
+			strncpy(curr->url, url, URL_MAX - 1);
+			curr->url[URL_MAX-1] = '\0';
+            curr->response = strdup(data);
+            curr->response_len = strlen(data);
+            curr->timestamp = now;
+            return 0;
+		}
+		if (!oldest || curr->timestamp < oldest->timestamp) {
+			oldest = curr;
+			oldest_prev = prev;
+		}
+		prev = curr;
+		curr = curr->next;
+	}
+	
+	int count = 0;
+	curr = head;
+	while (curr) { 
+		count++;
+		curr = curr->next;
+	}
+	if (count >= 4 && oldest) {
+		if (oldest->response) free(oldest->response);
+		strncpy(oldest->url, url, URL, URL_MAX - 1);
+		oldest->url[URL_MAX-1] = '\0';
+        oldest->response = strdup(data);
+        oldest->response_len = strlen(data);
+        oldest->timestamp = now;
+        return 0;
+		
+	}
+
+	CacheEntry_t *new_node = malloc(sizeof(CacheEntry_t));
+	if (!new_node) return -1;
+    strncpy(new_node->url, url, URL_MAX-1);
+    new_node->url[URL_MAX-1] = '\0';
+    new_node->response = strdup(data);
+    new_node->response_len = strlen(data);
+    new_node->timestamp = now;
+    new_node->next = NULL;
+
+	if (prev) prev->next = new_node;
+	else head->next = new_node;
+
+	cache->count++;
+	return 0;
 }
 
 
