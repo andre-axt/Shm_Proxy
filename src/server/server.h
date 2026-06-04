@@ -56,6 +56,7 @@ Connection_t* find_connection_by_fd(ConnectionManager_t *manager, int fd);
 int find_idx_by_fd(ConnectionManager_t *manager, int fd);
 int8_t send_buffer(Connection_t *conn, int fd);
 void remove_connection(ConnectionManager_t *manager, int index);
+int8_t is_response_complete(Connection_t *conn);
 int8_t read_socket(Connection_t *conn, int8_t handler); // Set the handler to 1 to read the client socket and 2 to read the remote server socket, more features coming soon. :)
 int8_t read_buffer(Cache_t *cache, Connection_t *conn, int8_t handler); // Same idea as read_socket
 
