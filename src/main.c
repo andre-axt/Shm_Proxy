@@ -35,6 +35,7 @@ int main(){
     signal(SIGPIPE, SIG_IGN);	
     signal(SIGINT, stop_server);
     server = malloc(sizeof(Socket_t));
+	if (server == NULL) return 1;
     server->domain = AF_INET;
     server->type = SOCK_STREAM;
     server->protocol = 0;
