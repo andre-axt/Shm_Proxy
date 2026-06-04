@@ -263,6 +263,7 @@ char* get_ip_from_host(const char* hostname){
 
 ConnectionManager_t* init_connection_manager(uint8_t max_conn, int epoll_fd) {
 	ConnectionManager_t *manager = malloc(sizeof(ConnectionManager_t));
+	if(manager == NULL) return NULL;
 	manager->conn = calloc(max_conn, sizeof(Connection_t));
 	manager->max_conn = max_conn;
 	manager->act_conn = 0;
