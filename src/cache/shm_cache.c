@@ -50,7 +50,7 @@ int8_t add_cache(Cache_t *cache, const char *url, const char *data) {
 			return 0;
 		}
 		prev = curr;
-		curr = curr->next;
+		curr = (CacheEntry_t*) curr->next;
 	}
 
 	time_t now = time(NULL);
@@ -73,18 +73,18 @@ int8_t add_cache(Cache_t *cache, const char *url, const char *data) {
 			oldest_prev = prev;
 		}
 		prev = curr;
-		curr = curr->next;
+		curr = (CacheEntry_t*) curr->next;
 	}
 	
 	int count = 0;
 	curr = head;
 	while (curr) { 
 		count++;
-		curr = curr->next;
+		curr = (CacheEntry_t*) curr->next;
 	}
 	if (count >= 4 && oldest) {
 		if (oldest->response) free(oldest->response);
-		strncpy(oldest->url, url, URL, URL_MAX - 1);
+		strncpy(oldest->url, url, URL_MAX - 1);
 		oldest->url[URL_MAX-1] = '\0';
         oldest->response = strdup(data);
         oldest->response_len = strlen(data);
@@ -102,8 +102,8 @@ int8_t add_cache(Cache_t *cache, const char *url, const char *data) {
     new_node->timestamp = now;
     new_node->next = NULL;
 
-	if (prev) prev->next = new_node;
-	else head->next = new_node;
+	if (prev) prev->next = (struct CacheEntry_t*) new_node;
+	else head->next = (struct CacheEntry_t*) new_node;
 
 	cache->count++;
 	return 0;
