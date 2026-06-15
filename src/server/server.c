@@ -9,6 +9,7 @@
 #include <netdb.h>
 
 int8_t set_nonblocking(int fd) {
+	if(fd < 0) return -1;
 	int flags = fcntl(fd, F_GETFL, 0);
 	if (flags == -1){
 		char *msg = "Error - fcntl failed\n";
@@ -20,6 +21,7 @@ int8_t set_nonblocking(int fd) {
 } 
 
 int8_t create_server(Socket_t * sckt){
+	if(sckt == NULL) return -1;
 	sckt->socket_fd = socket(sckt->domain, sckt->type, sckt->protocol);
 	if(sckt->socket_fd < 0){
 		char *msg = "Error - failed to create socket\n";
@@ -37,6 +39,7 @@ int8_t create_server(Socket_t * sckt){
 }
 
 int8_t start_listen(Socket_t * sckt){
+	if(sckt == NULL) return -1;
 	int opt = 1;
 	setsockopt(sckt->socket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
@@ -45,12 +48,14 @@ int8_t start_listen(Socket_t * sckt){
                 write(1, msg, 32);
                 return 1;
 	
-	}
+	}char *msg = "Error - add client to epoll failed\n";
+                        write(1, msg, 35);
 	return 0;
 
 } 
 
 int8_t read_socket(Connection_t *conn, int8_t handler){
+	if(conn == NULL) return -1;
 	ssize_t bytes_read;
 	if(handler > 2 || handler < 1){
 		char *msg = "Error - handler must be 1 or 2\n";
@@ -186,6 +191,7 @@ int8_t is_response_complete(Connection_t *conn) {
 }
 
 int8_t read_buffer(Cache_t *cache, Connection_t *conn, int8_t handler) {
+	if(conn == NULL || cache == NULL) return -1;
     const char *methods[] = {"GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS", "CONNECT"};
     int8_t num_methods = sizeof(methods) / sizeof(methods[0]);
 	if(handler > 2 || handler < 1) return -1;
@@ -311,6 +317,7 @@ void free_connection_manager(ConnectionManager_t* conn_manager){
 }
 
 Connection_t* add_client_connection(ConnectionManager_t *manager, int client_fd) {
+	if(manager == NULL) return -1;
 	for(int i = 0; i < manager->max_conn; i++) {
 		if(manager->conn[i].client_fd == -1) {
 			manager->conn[i].client_fd = client_fd;
@@ -332,6 +339,7 @@ Connection_t* add_client_connection(ConnectionManager_t *manager, int client_fd)
 }
 
 Connection_t * find_connection_by_fd(ConnectionManager_t *manager, int fd) {
+	if (manager == NULL) return -1;
 	for(int i = 0; i < manager->max_conn; i++) {
 		if(manager->conn[i].client_fd == fd || manager->conn[i].remote_server_fd == fd){
 			return &manager->conn[i]; //It simply return the connection, without indicating whether it's the client's or the remote_server's fd  
@@ -341,6 +349,7 @@ Connection_t * find_connection_by_fd(ConnectionManager_t *manager, int fd) {
 }
 
 int find_idx_by_fd(ConnectionManager_t *manager, int fd) {
+	if (manager == NULL || fd < 0) return -1;
 	for(int i = 0; i < manager->max_conn; i++) {
 		if(manager->conn[i].client_fd == fd || manager->conn[i].remote_server_fd == fd){
 			return i;
@@ -350,7 +359,7 @@ int find_idx_by_fd(ConnectionManager_t *manager, int fd) {
 }
 
 int8_t send_buffer(Connection_t *conn, int fd) {
-    if(fd == -1) return 0;
+    if(conn == NULL || fd < 0) return 0;
 
     char *buf_ptr = NULL;
     size_t *buf_len = NULL;
