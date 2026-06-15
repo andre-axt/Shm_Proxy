@@ -204,6 +204,8 @@ int8_t read_buffer(Cache_t *cache, Connection_t *conn, int8_t handler) {
 		}
 
 		if (is_response_complete(conn)) {
+			char *msg = "Found - full response\n";
+            write(1, msg, 23);
 			if (response_filter(conn->res) == 0) {
 				if (find_cache(cache, conn->req->path) == NULL) {
 					add_cache(cache, conn->req->path, conn->remote_server_buffer);
@@ -359,7 +361,7 @@ int find_idx_by_fd(ConnectionManager_t *manager, int fd) {
 }
 
 int8_t send_buffer(Connection_t *conn, int fd) {
-    if(conn == NULL || fd < 0) return 0;
+    if(conn == NULL || fd < 0) return -1;
 
     char *buf_ptr = NULL;
     size_t *buf_len = NULL;
