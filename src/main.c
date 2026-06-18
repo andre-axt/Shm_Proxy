@@ -173,11 +173,9 @@ int main(){
 	                                continue;
 	                            }
 								if(result == 2) {
-									struct epoll_event ev_remote;
-									ev_remote.events = EPOLLIN | EPOLLOUT;
-									ev_remote.data.fd = conn->remote_server_fd;
-									epoll_ctl(epfd, EPOLL_CTL_ADD, conn->remote_server_fd, &ev_remote);
-                                    continue;
+								    int idx = find_idx_by_fd(conn_manager, fd);
+								    if(idx != -1) remove_connection(conn_manager, idx);
+								    continue;
 								}
 								if(conn->req && conn->req->method && strcmp(conn->req->method, "CONNECT") == 0) {
 									char *headers_end = strstr(conn->client_buffer, "\r\n\r\n");
@@ -241,6 +239,11 @@ int main(){
 											epoll_ctl(epfd, EPOLL_CTL_ADD, conn->remote_server_fd, &ev_remote);
 											
 
+										}
+										else {
+											int idx = find_idx_by_fd(conn_manager, conn->client_fd);
+										    if(idx != -1) remove_connection(conn_manager, idx);
+										    continue;
 										}
 									}
 								}
