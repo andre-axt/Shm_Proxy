@@ -289,6 +289,7 @@ ConnectionManager_t* init_connection_manager(uint8_t max_conn, int epoll_fd) {
 		manager->conn[i].state = 0;
 		manager->conn[i].res = NULL;
 		manager->conn[i].req = NULL;
+		manager->conn[i].flag = 0;
 	}
 
 	return manager;
@@ -324,6 +325,9 @@ Connection_t* add_client_connection(ConnectionManager_t *manager, int client_fd)
 		if(manager->conn[i].client_fd == -1) {
 			manager->conn[i].client_fd = client_fd;
 			manager->conn[i].state = 0;
+			manager->conn[i].flag = 0;
+			manager->conn[i].req = 0;
+			manager->conn[i].res = 0;
 			manager->conn[i].client_buffer_len = 0;
 			manager->conn[i].remote_server_buffer_len = 0;
 			manager->act_conn++;
