@@ -1,12 +1,12 @@
-#ifndef SERVER_H
-#define SERVER_H
+#ifndef SHM_SERVER_H
+#define SHM_SERVER_H
 
 #include <netinet/in.h>
 #include <stdint.h>
 #include <sys/epoll.h>
 #include <unistd.h>
 #include <arpa/inet.h>
-#include "http_parser.h"
+#include "shm_http_parser.h"
 #include "shm_cache.h"
 
 #define MAX_EVENTS 100
