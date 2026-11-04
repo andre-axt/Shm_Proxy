@@ -121,6 +121,7 @@ http_response_t* free_response(http_response_t *res){
         }
         free(res->headers);
         free(res->body);
+        free(res->reason_phrase);
         free(res);
         return NULL;
 }
