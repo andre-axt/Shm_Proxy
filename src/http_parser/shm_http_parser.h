@@ -1,5 +1,5 @@
-#ifndef HTTP_PARSE
-#define HTTP_PARSE
+#ifndef SHM_HTTP_PARSE
+#define SHM_HTTP_PARSE
 #include <stdint.h>
 #include <stddef.h>
 
