@@ -1,5 +1,5 @@
 #include "shm_cache.h"
-#include "server.h"
+#include "shm_server.h"
 #include "config.h"
 #include <errno.h>
 #include <stdlib.h>
