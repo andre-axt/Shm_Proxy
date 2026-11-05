@@ -24,7 +24,7 @@ typedef struct {
 
 Cache_t* init_cache();
 uint16_t hash(const char *url);
-int8_t add_cache(Cache_t *cache, const char *url, const char *data);
+int8_t add_cache(Cache_t *cache, const char *url, const char *data, size_t len);
 CacheEntry_t* find_cache(Cache_t *cache, const char *url);
 
 #endif
